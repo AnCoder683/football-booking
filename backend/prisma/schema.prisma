@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model User {
+  id               String   @id @default(uuid()) @db.Uuid
+  name             String   @db.Text
+  email            String   @unique @db.Text
+  passwordHash     String   @db.Text
+  role             Role     @default(CUSTOMER)
+  isBookingBlocked Boolean  @default(false)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(3)
+}
+
+model Branch {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.Text
+  address   String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  courts    Court[]
+}
+
+model Court {
+  // SQL migration adds CHECKs for team size/price and a unique expression
+  // index on branchId + normalized name (including inactive courts).
+  id             String   @id @default(uuid()) @db.Uuid
+  branchId       String   @db.Uuid
+  name           String   @db.Text
+  playersPerTeam Int
+  pricePerSlot   Int
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+  branch         Branch   @relation(fields: [branchId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+}

@@ -1,0 +1,31 @@
+{
+  "method": "exec_command original_token_count for full concatenated output, truncated before returning it to the model; estimates, not exact billed request tokens.",
+  "scopes": [
+    {
+      "label": "before_four_entry_files",
+      "estimated_output_tokens": 110392,
+      "exit_code": 0
+    },
+    {
+      "label": "after_same_four_entry_files",
+      "estimated_output_tokens": 10052,
+      "exit_code": 0
+    },
+    {
+      "label": "after_startup_instructions_handoff_design_index",
+      "estimated_output_tokens": 4459,
+      "exit_code": 0
+    },
+    {
+      "label": "before_all_seven_entry_files",
+      "estimated_output_tokens": 140724,
+      "exit_code": 0
+    },
+    {
+      "label": "after_same_seven_entry_files",
+      "estimated_output_tokens": 15927,
+      "exit_code": 0
+    }
+  ],
+  "four_entry_files_reduction_percent": 90.9
+}

@@ -1,0 +1,45 @@
+{
+  "description": "Original files before documentation reorganization; preserve these bytes.",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 5383,
+      "sha256": "6680dace6a2b992cbd039822f6b1ab2f9ec714c17411d007eec10cce282def5c"
+    },
+    {
+      "path": "README.md",
+      "bytes": 13525,
+      "sha256": "0e36795f7adf611bdc78384047760bd84562a5738ef199326aa7a6cbb29369fc"
+    },
+    {
+      "path": "docs/DESIGN.md",
+      "bytes": 164290,
+      "sha256": "c05552f0490d4392fa8fe756e5958640603fe6472f5e7fc62110fd378a0a5ab8"
+    },
+    {
+      "path": "docs/INTERNSHIP_GUIDE.md",
+      "bytes": 6879,
+      "sha256": "7e8c6a50c18c65464cc76d4421aee2402d09ce626dd78d5313e9f00f120028d5"
+    },
+    {
+      "path": "docs/INTERVIEW_PREP.md",
+      "bytes": 100927,
+      "sha256": "fd34cc8ead3f3327eb212331446fc80e4370d1f317fde2b8d8ba23942cf20ff7"
+    },
+    {
+      "path": "docs/PROGRESS.md",
+      "bytes": 249498,
+      "sha256": "0bf82b013d73a00be512245747c174ff3b39773fa0159b71121fdd7ff7e66190"
+    },
+    {
+      "path": "docs/REQUIREMENTS.md",
+      "bytes": 43924,
+      "sha256": "0c98433e1e56030569e8377e611dd52d5bece33365e9e0e9c700928f2bacf738"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "bytes": 22238,
+      "sha256": "f7e0bf4af781fab6ae4a5e9ba71bf83ffc9af17b0206a7ec1e802ce8d51f0f67"
+    }
+  ]
+}

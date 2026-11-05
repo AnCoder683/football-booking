@@ -1,0 +1,283 @@
+{
+  "date": "2026-11-04",
+  "design_sections": {
+    "ERD cốt lõi — bản tổng hợp để review 2026-11-04": {
+      "destination": "docs/design/data-model.md",
+      "mode": "moved"
+    },
+    "Dữ liệu thời gian Booking — mentor đề xuất theo yêu cầu người học": {
+      "destination": "docs/design/data-model.md",
+      "mode": "moved"
+    },
+    "Trạng thái và thông tin hủy — đã duyệt 2026-11-02": {
+      "destination": "docs/design/data-model.md",
+      "mode": "moved"
+    },
+    "Giá lịch sử — đã duyệt 2026-11-02": {
+      "destination": "docs/design/data-model.md",
+      "mode": "moved"
+    },
+    "Biểu diễn tiền — đã duyệt 2026-11-02": {
+      "destination": "docs/design/data-model.md",
+      "mode": "moved"
+    },
+    "Thông tin Branch và Court — đã duyệt 2026-11-02": {
+      "destination": "docs/design/data-model.md",
+      "mode": "moved"
+    },
+    "Trường User — đã duyệt 2026-11-02": {
+      "destination": "docs/design/data-model.md",
+      "mode": "moved"
+    },
+    "Lịch sử chặn — giữ BookingBlockHistory, bỏ CustomerNote": {
+      "destination": "docs/design/data-model.md",
+      "mode": "moved"
+    },
+    "Lý do chỉ lưu trên lịch sử — đã duyệt 2026-11-02": {
+      "destination": "docs/design/data-model.md",
+      "mode": "moved"
+    },
+    "Bảng phục vụ đặt sân — đã chọn phương án BookingSlot 2026-11-03": {
+      "destination": "docs/design/booking-slots.md",
+      "mode": "moved"
+    },
+    "Review cách biểu diễn slot được đặt lại — 2026-11-04": {
+      "destination": "docs/design/booking-slots.md",
+      "mode": "moved"
+    },
+    "Giới hạn 3 booking — đã duyệt hướng khóa dòng User 2026-11-03": {
+      "destination": "docs/design/transactions.md",
+      "mode": "moved"
+    },
+    "Court thay đổi đồng thời — chốt hướng transaction ngắn 2026-11-03": {
+      "destination": "docs/design/transactions.md",
+      "mode": "moved"
+    },
+    "Quy ước response — khung tạm thời đã duyệt 2026-11-03": {
+      "destination": [
+        "docs/design/api-common.md",
+        "docs/design/api-bookings.md"
+      ],
+      "mode": "split; introductory review retained in snapshot"
+    },
+    "API lịch đặt cá nhân — GET /bookings/me": {
+      "destination": "docs/design/api-bookings.md",
+      "mode": "moved"
+    },
+    "API khách hủy booking — POST /bookings/:bookingId/cancel": {
+      "destination": "docs/design/api-bookings.md",
+      "mode": "moved"
+    },
+    "API admin hủy booking — POST /admin/bookings/:bookingId/cancel": {
+      "destination": "docs/design/api-bookings.md",
+      "mode": "moved"
+    },
+    "API danh sách booking quản trị — GET /admin/bookings": {
+      "destination": "docs/design/api-bookings.md",
+      "mode": "moved"
+    },
+    "API danh sách chi nhánh — GET /branches": {
+      "destination": "docs/design/api-courts.md",
+      "mode": "moved"
+    },
+    "Loại sân — trường và cách lưu đã duyệt 2026-11-03": {
+      "destination": "docs/design/api-courts.md",
+      "mode": "moved"
+    },
+    "API danh sách sân — GET /courts (đã duyệt 2026-11-03)": {
+      "destination": "docs/design/api-courts.md",
+      "mode": "moved"
+    },
+    "API chi tiết sân — GET /courts/:courtId": {
+      "destination": "docs/design/api-courts.md",
+      "mode": "moved"
+    },
+    "API giờ trống — hợp đồng đã duyệt 2026-11-03": {
+      "destination": "docs/design/api-courts.md",
+      "mode": "moved"
+    },
+    "API admin tạo sân — POST /admin/courts (hợp đồng đã duyệt 2026-11-03)": {
+      "destination": "docs/design/api-courts.md",
+      "mode": "moved"
+    },
+    "API admin sửa sân — hợp đồng đã duyệt 2026-11-03": {
+      "destination": "docs/design/api-courts.md",
+      "mode": "moved"
+    },
+    "API admin danh sách sân — GET /admin/courts (đã duyệt 2026-11-03)": {
+      "destination": "docs/design/api-courts.md",
+      "mode": "moved"
+    },
+    "Hạn chế tài khoản — đã chốt chỉ chặn đặt mới 2026-11-02": {
+      "destination": "docs/design/api-customers.md",
+      "mode": "moved"
+    },
+    "API admin danh sách khách — GET /admin/customers (đã duyệt 2026-11-03)": {
+      "destination": "docs/design/api-customers.md",
+      "mode": "moved"
+    },
+    "Tạo tài khoản khách — quyết định phạm vi cập nhật 2026-11-03": {
+      "destination": "docs/design/api-customers.md",
+      "mode": "moved"
+    },
+    "API admin chặn/mở chặn đặt — hợp đồng API đã duyệt, còn chi tiết concurrency": {
+      "destination": "docs/design/api-customers.md",
+      "mode": "moved"
+    },
+    "API admin lịch sử chặn đặt — đã duyệt 2026-11-03": {
+      "destination": "docs/design/api-customers.md",
+      "mode": "moved"
+    },
+    "Refresh token — phương án cơ bản đã duyệt 2026-11-02": {
+      "destination": "docs/design/auth.md",
+      "mode": "moved"
+    },
+    "Đăng ký khách — hợp đồng API đã duyệt 2026-11-03": {
+      "destination": "docs/design/auth.md",
+      "mode": "moved"
+    },
+    "Đăng nhập — POST /auth/login (hợp đồng chính đã duyệt 2026-11-03)": {
+      "destination": "docs/design/auth.md",
+      "mode": "moved"
+    },
+    "Tài khoản hiện tại — GET /auth/me (đã duyệt 2026-11-03)": {
+      "destination": "docs/design/auth.md",
+      "mode": "moved"
+    },
+    "Gia hạn phiên — POST /auth/refresh (đề xuất hợp đồng cơ bản chờ duyệt)": {
+      "destination": "docs/design/auth.md",
+      "mode": "moved"
+    },
+    "Logout phiên hiện tại — luồng chính đã duyệt 2026-11-04": {
+      "destination": "docs/design/auth.md",
+      "mode": "moved"
+    },
+    "Cookie và CSRF — chính sách đã duyệt 2026-11-04": {
+      "destination": "docs/design/auth.md",
+      "mode": "moved"
+    },
+    "Phối hợp refresh đồng thời — bước giải thích tiếp theo, chưa chốt đầy đủ": {
+      "destination": "docs/design/auth.md",
+      "mode": "moved"
+    },
+    "Refresh/logout thất bại — chính sách đề xuất để review 2026-11-04": {
+      "destination": "docs/design/auth.md",
+      "mode": "moved"
+    },
+    "Điều chỉnh nhịp học auth — yêu cầu người học 2026-11-04": {
+      "destination": "docs/design/auth.md",
+      "mode": "moved"
+    },
+    "Kiểu ID — đã duyệt UUID 2026-11-04": {
+      "destination": "docs/design/constraints.md",
+      "mode": "consolidated; complete discussion retained in snapshot"
+    },
+    "Xóa Court có lịch sử — đã duyệt RESTRICT 2026-11-04": {
+      "destination": "docs/design/constraints.md",
+      "mode": "consolidated; complete discussion retained in snapshot"
+    },
+    "Khóa ngoại Court → Branch — đã duyệt RESTRICT 2026-11-04": {
+      "destination": "docs/design/constraints.md",
+      "mode": "consolidated; complete discussion retained in snapshot"
+    },
+    "Khóa ngoại lịch sử → User — đã duyệt RESTRICT 2026-11-04": {
+      "destination": "docs/design/constraints.md",
+      "mode": "consolidated; complete discussion retained in snapshot"
+    },
+    "BookingSlot → Booking — đã duyệt RESTRICT 2026-11-04": {
+      "destination": "docs/design/constraints.md",
+      "mode": "consolidated; complete discussion retained in snapshot"
+    },
+    "RefreshToken → User — đã duyệt CASCADE 2026-11-04": {
+      "destination": "docs/design/constraints.md",
+      "mode": "consolidated; complete discussion retained in snapshot"
+    },
+    "Tổng hợp ON DELETE đã duyệt — 2026-11-04": {
+      "destination": "docs/design/constraints.md",
+      "mode": "consolidated; complete discussion retained in snapshot"
+    },
+    "ON UPDATE và tính bất biến của ID — đã duyệt 2026-11-04": {
+      "destination": "docs/design/constraints.md",
+      "mode": "consolidated; complete discussion retained in snapshot"
+    },
+    "Kiểu cột thời gian — đề xuất để review 2026-11-04": {
+      "destination": "docs/design/constraints.md",
+      "mode": "consolidated; complete discussion retained in snapshot"
+    },
+    "Quan hệ đã review": {
+      "destination": "docs/archive/2026-11-04-before-reorganization/docs/DESIGN.md",
+      "mode": "historical review/navigation; current counterpart in DESIGN index or topic files"
+    },
+    "Khóa ngoại đã review": {
+      "destination": "docs/archive/2026-11-04-before-reorganization/docs/DESIGN.md",
+      "mode": "historical review/navigation; current counterpart in DESIGN index or topic files"
+    },
+    "Nhóm chi nhánh/địa điểm — bảng riêng đã được người học chọn": {
+      "destination": "docs/archive/2026-11-04-before-reorganization/docs/DESIGN.md",
+      "mode": "historical review/navigation; current counterpart in DESIGN index or topic files"
+    },
+    "Bước thiết kế tiếp theo": {
+      "destination": "docs/archive/2026-11-04-before-reorganization/docs/DESIGN.md",
+      "mode": "historical review/navigation; current counterpart in DESIGN index or topic files"
+    },
+    "Phần còn phải thiết kế trong FB-002": {
+      "destination": "docs/archive/2026-11-04-before-reorganization/docs/DESIGN.md",
+      "mode": "historical review/navigation; current counterpart in DESIGN index or topic files"
+    }
+  },
+  "learning_stage_tables": [
+    "docs/learning/stage-0.md",
+    "docs/learning/stage-1.md",
+    "docs/learning/stage-2.md",
+    "docs/learning/stage-3.md",
+    "docs/learning/stage-4.md",
+    "docs/learning/stage-5.md",
+    "docs/learning/stage-6.md"
+  ],
+  "original_question_status_rows": [
+    "| G0-01 | Bạn muốn ứng tuyển Backend intern và muốn project này chứng minh điều gì? | Đã giải thích được |",
+    "| G0-02 | Trong REST API, Prisma, PostgreSQL, JWT, RBAC, Docker và Vitest, phần nào bạn đã tự làm? Cho ví dụ cụ thể. | Đã giải thích được |",
+    "| G0-03 | Phần nào bạn mới hiểu khái niệm hoặc còn phụ thuộc nhiều vào hướng dẫn? | Đã giải thích được |",
+    "| G0-04 | Vì sao bạn chọn bài toán đặt sân bóng đá? | Đã giải thích được |",
+    "| G0-05 | Bạn sẽ dùng AI như thế nào để vẫn hiểu và tự bảo trì code? | Cần ôn |",
+    "| G1-01 | Ai dùng hệ thống? Khách và admin có quyền gì khác nhau? | Chưa học |",
+    "| G1-02 | Một lượt đặt sân hợp lệ cần thỏa mãn những điều kiện nào? | Cần ôn |",
+    "| G1-03 | Vì sao chọn slot cơ sở 30 phút và cho đặt nhiều slot liên tiếp? Lựa chọn này đem lại lợi ích và yêu cầu kiểm tra gì? | Cần ôn |",
+    "| G1-04 | User, Court và Booking liên hệ thế nào? Vì sao giữ booking khi khách hủy? | Đã giải thích được |",
+    "| G1-05 | Vì sao giá booking cần lưu tại thời điểm đặt? | Đã giải thích được |",
+    "| G1-06 | Bạn thiết kế API đặt/hủy thế nào và trả lỗi gì khi yêu cầu không hợp lệ? | Cần ôn |",
+    "| G2-01 | Một request đặt sân đi qua những lớp nào trong ứng dụng? | Chưa học |",
+    "| G2-02 | Bạn chia module thế nào? Controller và service chịu trách nhiệm gì? | Chưa học |",
+    "| G2-03 | JWT xác thực người dùng thế nào? Quyền được kiểm tra ở đâu? | Chưa học |",
+    "| G2-04 | Làm sao ngăn khách xem hoặc hủy booking của người khác? | Chưa học |",
+    "| G2-05 | Backend kiểm tra thời gian và tính giá thế nào? Vì sao không tin giá frontend gửi? | Cần ôn |",
+    "| G2-06 | Khi API lỗi hoặc slot vừa bị đặt, giao diện phản hồi thế nào? | Cần ôn |",
+    "| G3-01 | Vì sao kiểm tra slot còn trống rồi insert vẫn có thể gây đặt trùng? | Chưa học |",
+    "| G3-02 | Database bảo đảm một booking hiệu lực cho mỗi sân/giờ bằng cách nào? | Chưa học |",
+    "| G3-03 | Sau khi hủy, vì sao khách có thể đặt lại slot đó? | Chưa học |",
+    "| G3-04 | Khi nào transaction cần thiết? Ràng buộc database giải quyết phần nào? | Cần ôn |",
+    "| G3-05 | Bạn kiểm thử hai request đồng thời thế nào? Kết quả mong đợi là gì? | Chưa học |",
+    "| G3-06 | Vì sao dùng DB riêng cho test? Mock không kiểm chứng được điều gì ở đây? | Chưa học |",
+    "| G3-07 | Kể một lỗi thực tế bạn phát hiện qua test và cách sửa. Nếu chưa gặp, hãy nói rõ. | Chưa học |",
+    "| G4-01 | CI giải quyết vấn đề gì so với chỉ chạy test trên máy cá nhân? | Chưa học |",
+    "| G4-02 | Workflow, job, step và runner khác nhau thế nào? | Chưa học |",
+    "| G4-03 | Workflow chạy khi nào và thực hiện những kiểm tra gì? | Chưa học |",
+    "| G4-04 | PostgreSQL phục vụ test được khởi tạo và chuẩn bị dữ liệu ra sao? | Chưa học |",
+    "| G4-05 | Khi local chạy được nhưng CI thất bại, bạn tìm nguyên nhân thế nào? | Chưa học |",
+    "| G4-06 | CI khác tự động deploy ở điểm nào? | Chưa học |",
+    "| G5-01 | Đường đi từ trình duyệt tới backend và database trên VPS như thế nào? | Chưa học |",
+    "| G5-02 | Dockerfile, image, container và Docker Compose khác nhau thế nào? | Chưa học |",
+    "| G5-03 | Reverse proxy làm gì? Domain và HTTPS tham gia luồng truy cập ra sao? | Chưa học |",
+    "| G5-04 | Cấu hình và secret được cung cấp ở đâu? Cổng nào được public? | Chưa học |",
+    "| G5-05 | Vì sao dữ liệu còn sau khi thay container? Bạn kiểm chứng thế nào? | Chưa học |",
+    "| G5-06 | Bạn cập nhật app và chạy migration ra sao? Làm gì nếu cập nhật lỗi? | Chưa học |",
+    "| G5-07 | App không truy cập được: bạn kiểm tra gì và theo thứ tự nào? | Chưa học |",
+    "| G5-08 | Bạn đã backup và khôi phục thử database thế nào? | Chưa học |",
+    "| G6-01 | Giới thiệu project trong 60–90 giây: bài toán, người dùng và phần bạn làm. | Chưa học |",
+    "| G6-02 | Quyết định kỹ thuật đáng nói nhất là gì? Bạn cân nhắc phương án nào khác? | Chưa học |",
+    "| G6-03 | Lỗi khó nhất bạn thực tế gặp là gì? Bạn tìm và kiểm chứng cách sửa ra sao? | Chưa học |",
+    "| G6-04 | Bạn tự làm phần nào, AI hỗ trợ phần nào và bạn kiểm tra kết quả AI thế nào? | Chưa học |",
+    "| G6-05 | Giới hạn của hệ thống là gì? Có thêm thời gian, bạn ưu tiên cải thiện gì? | Chưa học |",
+    "| G6-06 | Từng phát biểu trong CV được chứng minh bằng code, test hoặc demo nào? | Chưa học |"
+  ]
+}
