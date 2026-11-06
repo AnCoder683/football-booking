@@ -14,7 +14,6 @@
     "prisma:generate": "prisma generate",
     "db:check": "tsx src/scripts/check-db.ts",
     "db:seed": "prisma db seed",
-    "test:courts": "npm run prisma:generate && bash ../scripts/check-courts-api.sh",
     "precheck": "npm run prisma:generate",
     "prebuild": "npm run prisma:generate",
     "predb:check": "npm run prisma:generate",
@@ -23,7 +22,8 @@
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
-    "express": "^5.3.0"
+    "express": "^5.3.0",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

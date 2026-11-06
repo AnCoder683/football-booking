@@ -381,3 +381,34 @@ Chỉ cập nhật mức hiểu sau câu trả lời thực tế; không chặn 
 
 - Người học nhận xét backend chưa tổ chức đầy đủ theo module và yêu cầu “thêm control luôn khỏi repository cũng được”. Chốt có controller, không repository; mentor tách routes/validation/controller/service cho courts và dời config/lib/scripts. File seed hiện hành là `backend/src/scripts/seed.ts`, thay vị trí `backend/src/seed.ts` trong các ghi nhận lịch sử phía trên.
 - Các kiểm chứng refactor được ghi tại PROGRESS/README; chưa có lời giải thích độc lập của người học về trách nhiệm controller/service hoặc truyền dữ liệu qua res.locals. Không coi yêu cầu thêm lớp hay test pass là bằng chứng đã hiểu. Module auth sẽ theo cấu trúc này khi triển khai; chưa code auth.
+
+### Chọn Zod — 2026-11-05
+
+- Người học yêu cầu dùng Zod cho validation. Mentor cài Zod 4.6.7, chuyển GET /courts sang schema/safeParse, suy kiểu bằng z.infer và map issues thành error.details field/message. Check/build và 34 kiểm tra API đạt; chưa có lời giải thích hoặc thực hành schema Zod của người học. Ghi quyết định công cụ, không tự đánh dấu đã hiểu runtime validation/type inference.
+
+### Chọn Vitest/Supertest — 2026-11-05
+
+- Người học yêu cầu “dùng vitest/supertest luôn”. Mentor chuyển test API sân sang TypeScript/Vitest/Supertest, giữ PostgreSQL test riêng và các hành vi đã kiểm tra. Check/build pass, npm test 33 pass; khác số 34 cũ do describe không tính là một test cha. Chưa có lời giải thích hoặc bài test người học tự viết; chỉ ghi quyết định công cụ, không nâng mức hiểu. Quy ước lỗi dùng chung còn chờ chốt trước auth.
+
+### Nhu cầu hiểu test và điểm dừng — 2026-11-05
+
+- Người học hỏi có cần biết ý nghĩa từng đoạn test. Mentor giới thiệu mục tiêu đọc được dữ liệu chuẩn bị, request, assertion, lỗi test phát hiện và giới hạn thật/mock; giới thiệu test/describe/hooks/Supertest/expect/vi.spyOn. Đây là giải thích mentor, chưa phải bằng chứng người học đã hiểu các API test.
+- Câu review “Vì sao test GET /courts cần có cả sân hoạt động và sân ngừng hoạt động trong DB test?” chưa được trả lời vì người học yêu cầu dừng session dài. Buổi sau bắt đầu bằng câu này, không tự trả lời thay hoặc nâng mức hiểu từ 33 test pass.
+
+### Đọc test từng phần — 2026-11-06
+
+- Người học phản hồi review nhiều phần một lượt khó tracing, yêu cầu cùng viết/đọc từng phần nhỏ. Đã trao đổi test/expect, Supertest, createApp và đường truyền tên DB qua shell; các câu “Ok” không được coi là giải thích độc lập.
+- Người học chọn DB test cố định `football_booking_test` thay tên ngẫu nhiên. Mentor thực hiện thay đổi; lần tiếp theo đọc helper cấu hình DB test từng đoạn nhỏ. Câu hỏi về dữ liệu sân active/inactive vẫn chưa có câu trả lời; chưa nâng mức hiểu.
+
+- Tiếp nối 2026-11-06: người học vẫn thấy cấu hình test phức tạp và yêu cầu đơn giản hơn. Mentor bỏ shell/fixture SQL, chuyển chuẩn bị dữ liệu sang Prisma trong tests/setup.ts để file test tập trung vào request/assertion. Chưa có câu trả lời mới để đánh giá mức hiểu; tiếp tục từng đoạn nhỏ.
+
+- Tiếp nối yêu cầu phù hợp intern: mentor tách bài test thành các hành vi nhỏ, viết request và response trực tiếp, giữ validation theo bảng/spy ở cuối để học sau. 41 test pass là bằng chứng code, chưa là bằng chứng người học hiểu. Bước học kế tiếp chỉ đọc request trong bài đầu.
+
+### Tracing cấu hình DB test và bàn giao — 2026-11-06
+
+> Cập nhật sau đó ngày 2026-11-06: người học yêu cầu gỡ bộ test và cấu hình test. Phần dưới giữ bằng chứng học lịch sử; không tiếp tục tracing các file đã gỡ, không nâng mức hiểu.
+
+- Người học yêu cầu khai báo TEST_DATABASE_URL riêng, phản ánh các kiểm tra an toàn làm rối/nản. Sau khi mentor trình bày toàn luồng quá dài, người học yêu cầu mỗi lượt một đoạn rất nhỏ, chờ hỏi/xác nhận rồi mới tiếp tục; cuối buổi nhắc lưu quy tắc này cho các yêu cầu tracing sau.
+- Lời người học: “giờ process.env sẽ có đầy đủ các biến đã khai báo trong .env”; mentor xác nhận và bổ sung giá trị là chuỗi. Đây là bằng chứng hiểu riêng bước nạp biến, không suy ra đã hiểu toàn bộ cấu hình/test.
+- Mentor đã giải thích new URL/loadEnvFile, tên DB mong đợi, khai báo hàm, đọc biến, các điều kiện bảo vệ và return url. Người học xác nhận/cho phép tiếp tục từng đoạn; chưa có lời giải thích độc lập cho toàn bộ hàm, không nâng trạng thái câu hỏi từ các câu “Ok”.
+- Dừng ngay sau khi mentor giới thiệu `datasource: { url: getTestDatabaseUrl() }` trong prisma.test.config.ts; chưa nhận xác nhận hiểu riêng dòng này. Buổi sau xác nhận lại đúng dòng này rồi chờ, chưa đi sang migrate/setup. Câu review active/inactive vẫn chưa trả lời.

@@ -1,55 +1,52 @@
 import type { NextFunction, Request, Response } from 'express';
+import { z } from 'zod';
 
-export type ListCourtsQuery = {
-  page: number;
-  limit: number;
-  branchId?: string;
-  playersPerTeam?: number;
-};
-
-export type CourtsLocals = { courtsQuery: ListCourtsQuery };
-type FieldError = { field: string; message: string };
-
-function positiveInteger(value: unknown, fallback: number): number | undefined {
-  if (value === undefined) return fallback;
-  if (typeof value !== 'string' || !/^\d+$/.test(value)) return undefined;
-  const number = Number(value);
-  return Number.isSafeInteger(number) && number > 0 ? number : undefined;
+function integerQuery(fallback: number, maximum: number, message: string) {
+  return z.string({ error: message })
+    .regex(/^\d+$/, { error: message })
+    .transform(Number)
+    .pipe(z.number({ error: message })
+      .int({ error: message })
+      .min(1, { error: message })
+      .max(maximum, { error: message }))
+    .default(fallback);
 }
 
+// Validate the string before conversion: blank strings, arrays, fractions,
+// scientific notation and partially numeric values must not be coerced.
+export const listCourtsQuerySchema = z.object({
+  page: integerQuery(1, Number.MAX_SAFE_INTEGER, 'page phải là số nguyên dương hợp lệ.'),
+  limit: integerQuery(10, 50, 'limit phải là số nguyên từ 1 đến 50.'),
+  branchId: z.string({ error: 'branchId phải là UUID hợp lệ.' })
+    .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      { error: 'branchId phải là UUID hợp lệ.' })
+    .optional(),
+  playersPerTeam: z.enum(['5', '7', '11'], { error: 'playersPerTeam chỉ nhận 5, 7 hoặc 11.' })
+    .transform(Number)
+    .optional(),
+});
+
+// Infer the parsed output type from the schema; do not maintain a second shape.
+export type ListCourtsQuery = z.infer<typeof listCourtsQuerySchema>;
+export type CourtsLocals = { courtsQuery: ListCourtsQuery };
+
 export function validateListCourts(req: Request, res: Response<unknown, CourtsLocals>, next: NextFunction) {
-  const errors: FieldError[] = [];
-  const page = positiveInteger(req.query.page, 1);
-  const limit = positiveInteger(req.query.limit, 10);
-  const branchId = req.query.branchId;
-  const teamSize = req.query.playersPerTeam;
-
-  if (page === undefined) errors.push({ field: 'page', message: 'page phải là số nguyên dương hợp lệ.' });
-  if (limit === undefined || limit > 50) {
-    errors.push({ field: 'limit', message: 'limit phải là số nguyên từ 1 đến 50.' });
-  }
-  if (branchId !== undefined && (typeof branchId !== 'string'
-    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(branchId))) {
-    errors.push({ field: 'branchId', message: 'branchId phải là UUID hợp lệ.' });
-  }
-  if (teamSize !== undefined && (typeof teamSize !== 'string' || !['5', '7', '11'].includes(teamSize))) {
-    errors.push({ field: 'playersPerTeam', message: 'playersPerTeam chỉ nhận 5, 7 hoặc 11.' });
-  }
-
-  if (errors.length > 0 || page === undefined || limit === undefined) {
+  const result = listCourtsQuerySchema.safeParse(req.query);
+  if (!result.success) {
     res.status(400).json({
       success: false,
-      error: { code: 'VALIDATION_ERROR', message: 'Dữ liệu không hợp lệ.', details: errors },
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Dữ liệu không hợp lệ.',
+        details: result.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        })),
+      },
     });
     return;
   }
 
-  // Pass parsed values onward; service never receives raw HTTP query.
-  res.locals.courtsQuery = {
-    page,
-    limit,
-    ...(typeof branchId === 'string' ? { branchId } : {}),
-    ...(typeof teamSize === 'string' ? { playersPerTeam: Number(teamSize) } : {}),
-  };
+  res.locals.courtsQuery = result.data;
   next();
 }

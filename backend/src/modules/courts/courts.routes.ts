@@ -1,14 +1,7 @@
 import { Router } from 'express';
-import type { PrismaClient } from '../../generated/prisma/client.js';
-import { createCourtsController } from './courts.controller.js';
-import { createCourtsService } from './courts.service.js';
+import { listCourtsController } from './courts.controller.js';
 import { validateListCourts } from './courts.validation.js';
 
-export function createCourtsRouter(database: PrismaClient) {
-  const router = Router();
-  const service = createCourtsService(database);
-  const controller = createCourtsController(service);
+export const courtsRouter = Router();
 
-  router.get('/', validateListCourts, controller.listCourts);
-  return router;
-}
+courtsRouter.get('/', validateListCourts, listCourtsController);

@@ -25,7 +25,7 @@ Query playersPerTeam và hợp đồng GET /courts đã duyệt tại mục bên
 
 ## API danh sách sân — GET /courts (đã duyệt 2026-11-03)
 
-Triển khai local 2026-11-05: đã có GET /courts và frontend đọc danh sách, test API với DB riêng đạt 28 kiểm tra theo Node test runner. Đã kiểm tra HTTP trực tiếp/qua Vite trả dữ liệu seed; chưa kiểm chứng trình duyệt do browser host unavailable. Bộ lọc hiện có ở API; UI mới phân trang. Xem [cách chạy và giới hạn](../../README.md#api-danh-sách-sân-và-kết-nối-frontend). Các API quản trị/chi tiết/giờ trống trong chương này vẫn chưa triển khai.
+Triển khai local 2026-11-05: đã có GET /courts và frontend đọc danh sách, bộ test API đã gỡ theo yêu cầu ngày 2026-11-06; kết quả cũ chỉ là bằng chứng lịch sử tại PROGRESS. Đã kiểm tra HTTP trực tiếp/qua Vite trả dữ liệu seed; chưa kiểm chứng trình duyệt do browser host unavailable. Bộ lọc hiện có ở API; UI mới phân trang. Xem [cách chạy và giới hạn](../../README.md#api-danh-sách-sân-và-kết-nối-frontend). Các API quản trị/chi tiết/giờ trống trong chương này vẫn chưa triển khai.
 
 Người học xác nhận “Ok duyệt.” với toàn bộ hợp đồng danh sách sân và bộ lọc playersPerTeam sau khi đã chốt trường trên Court.
 

@@ -21,6 +21,8 @@
 
 ## Đọc theo chủ đề
 
+- [Kiến trúc backend](design/backend-architecture.md): các lớp/module đã duyệt và bản đề xuất cần review trước FB-004; chưa coi các đề xuất/công cụ còn mở là đã chốt.
+
 | Cần làm | Tài liệu | Trạng thái chính |
 | --- | --- | --- |
 | ERD cốt lõi, trường dữ liệu, giá lịch sử | [Mô hình](design/data-model.md) | Bộ trường/nghiệp vụ đã review; ERD đầy đủ bảy bảng còn hoàn thiện |

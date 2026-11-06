@@ -13,6 +13,8 @@ Mức hiểu giữ nguyên theo câu trả lời thực tế; không suy ra đã
 
 - **G1-07 — ưu tiên ôn khi xin việc theo yêu cầu người học:** Prisma schema so với ràng buộc SQL, quy trình và lịch sử migration; [câu hỏi ôn gắn với Branch/Court thực tế](learning/stage-1.md#g1-07--ôn-prisma-và-sql-migration-khi-xin-việc). Cần ôn, chưa có câu trả lời độc lập.
 
+- **Điểm dừng hiện hành 2026-11-06:** người học chốt buổi sau cấu hình test tối giản (Vitest/Supertest, PostgreSQL test riêng), sau đó viết test GET /courts trước auth. Hướng dẫn từng bước nhỏ; chưa triển khai hoặc nâng mức hiểu. Bằng chứng tracing DB test cũ giữ trong hồ sơ giai đoạn 1.
+
 ## Cần hướng dẫn trực quan khi code
 
 - **Mỗi khi gặp khóa:** dừng lại, đi chậm, trace từng request giữ/chờ/đọc lại/nhả khóa; chờ người học trước khi thêm tình huống. Áp dụng cho khóa DB và phối hợp frontend; xem [yêu cầu và bằng chứng](learning/stage-3.md#nhu-cầu-đi-chậm-khi-gặp-khóa--2026-11-04). Không nâng mức hiểu từ xác nhận đã hình dung.

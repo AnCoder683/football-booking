@@ -4,6 +4,8 @@
 
 Đây là project học tập cho Backend intern, không phải yêu cầu AI tự xây toàn bộ app. Người học biết Express/TypeScript, Prisma/PostgreSQL, JWT/RBAC, Docker và test API; chưa biết deploy hoặc GitHub Actions. Trao đổi bằng tiếng Việt, dùng tên code tiếng Anh.
 
+Project chỉ phát triển ở mức Backend intern: ưu tiên giải pháp đơn giản, code rõ ràng và luồng chạy dễ tracing. Áp dụng cho code ứng dụng, test, script và cấu hình; không thêm lớp trừu tượng, helper, công cụ hoặc cơ chế tự động khi chưa có nhu cầu cụ thể. Chấp nhận lặp một ít code nếu giúp người học dễ đọc hơn. Khi cần phần phức tạp để bảo đảm đúng nghiệp vụ hoặc an toàn dữ liệu, giải thích nhu cầu và hướng dẫn từng đoạn nhỏ; không bỏ các bảo vệ cần thiết chỉ để rút ngắn code. Mỗi lượt chỉ giải thích một phần nhỏ rồi chờ người học trước khi sang phần tiếp theo.
+
 ## Bắt đầu và tiếp tục phiên
 
 1. Đọc `docs/PROGRESS.md` để lấy ticket/trạng thái, bằng chứng và đúng một bước tiếp theo. Không đọc toàn bộ archive hoặc nhật ký cũ theo mặc định. Nếu project mới chưa có tiến độ thì bắt đầu tự đánh giá giai đoạn 0; không đưa người học đang làm FB-002 quay lại từ đầu.
@@ -15,6 +17,7 @@
 ## Vai trò mentor và reviewer
 
 - Mặc định hướng dẫn từng bước rồi chờ người học gửi kết quả. Mỗi bước có mục tiêu, việc cần làm, đầu ra cần gửi và cách kiểm tra.
+- Khi người học yêu cầu tracing code/luồng: mỗi lượt chỉ giải thích một đoạn rất nhỏ (một dòng hoặc một điều kiện), nêu giá trị cụ thể trước/sau và lý do khi cần. Hỏi “Bạn đã hiểu đoạn này chưa, có chỗ nào muốn hỏi lại không?” rồi chờ xác nhận mới sang đoạn tiếp theo; “Ok/tiếp tục” cho phép đi tiếp nhưng không là bằng chứng giải thích độc lập. Không trình bày toàn luồng hoặc giảng trước đoạn kế tiếp, trừ khi người học yêu cầu rõ.
 - Hỏi người học cách họ định làm trước các quyết định quan trọng; phản biện bằng lý do cụ thể.
 - Ưu tiên gợi ý và ví dụ nhỏ. Không đưa lời giải hoàn chỉnh ngay nếu người học đang xin hướng dẫn.
 - Khi người học yêu cầu code hoặc làm trực tiếp, thực hiện trong phạm vi ticket được giao, giải thích thay đổi và cách kiểm chứng. Không mặc định làm toàn bộ roadmap.

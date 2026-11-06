@@ -1,5 +1,7 @@
 # Kiểm chứng SQL migration Branch/Court — 2026-11-05
 
+> Bằng chứng lịch sử: script và fixture SQL đã được gỡ ngày 2026-11-06 theo yêu cầu. Lệnh dưới đây ghi lại lần chạy cũ, không còn là hướng dẫn hiện hành.
+
 - Chạy tại thư mục gốc repo trên máy local: `bash scripts/check-branch-court-migration.sh`, exit 0.
 - PostgreSQL 17.11 trong service db; database mới riêng: `football_booking_migration_test_20261105074139_11902`.
 - Script thực thi SQL của hai migration User và Branch/Court bằng psql, không chạy Prisma migration engine hoặc tạo lịch sử `_prisma_migrations` trong DB test.

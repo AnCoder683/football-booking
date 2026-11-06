@@ -2,7 +2,7 @@
 
 Ứng dụng đặt sân bóng đá cho một cơ sở có nhiều sân. Mục tiêu là tự xây dựng, kiểm thử, triển khai và giải thích được một backend để đưa vào CV Backend intern.
 
-**Trạng thái:** đang FB-002 (thiết kế); chưa có ứng dụng, test, workflow CI hoặc bản deploy. Trạng thái/bằng chứng và dự báo hiện hành ở [PROGRESS](docs/PROGRESS.md).
+**Trạng thái:** FB-003 DONE; FB-004 TODO; FB-002 IN_REVIEW. Đã có backend/frontend local và API danh sách sân; bộ test tự động đã gỡ theo yêu cầu ngày 2026-11-06. Chưa có CI hoặc bản deploy. Trạng thái/bằng chứng và dự báo hiện hành ở [PROGRESS](docs/PROGRESS.md).
 
 ## Bắt đầu từ đây
 
@@ -48,13 +48,14 @@ Mỗi Court có loại sân 5, 7 hoặc 11, biểu thị số người mỗi đ�
 | Backend | TypeScript, Express, Prisma, PostgreSQL |
 | Tổ chức | Module `auth`, `courts`, `bookings` |
 | Frontend | React + Vite, giao diện tối giản |
-| Test | Vitest + Supertest, PostgreSQL riêng cho integration test |
-| CI | GitHub Actions: kiểm tra kiểu, test, build |
+| CI | GitHub Actions: kiểm tra kiểu, build (chưa triển khai) |
 | Deploy | VPS Linux, Docker Compose, Caddy và HTTPS |
 
 Backend dùng access token JWT có thời hạn, refresh token và đăng xuất theo yêu cầu bổ sung của người học tại FB-002 ngày 2026-11-02; hash mật khẩu và kiểm tra quyền phía server. Phương án cơ bản đã duyệt: access JWT 15 phút, refresh token hạn trượt 7 ngày tính từ lần cấp mới, rotation sau mỗi lần refresh, cookie HttpOnly và database lưu hash token riêng; logout thu hồi refresh của phiên hiện tại, access đã cấp có thể còn hiệu lực tối đa 15 phút. Chi tiết cookie/CSRF, reuse/request đồng thời, schema và API còn cần hoàn thiện trong DESIGN; chưa triển khai. Không thêm refreshToken vào User dưới dạng một token rõ; mô hình phiên/token cần thiết kế riêng.
 
 ## Tổ chức backend
+
+Quyết định đã duyệt và các điểm còn mở được tổng hợp tại [kiến trúc backend](docs/design/backend-architecture.md); phần đề xuất cần review trước khi triển khai auth.
 
 Đã thống nhất có controller, không thêm repository. Cấu trúc hiện có:
 
@@ -79,16 +80,17 @@ backend/src/
 ```
 
 - Routes khai báo URL/method và nối validation với controller.
-- Validation là middleware kiểm tra/parse query, trả 400 nếu sai; nếu đúng, đưa dữ liệu đã parse vào `res.locals.courtsQuery` rồi gọi `next()`.
+- Validation dùng schema Zod trong module và middleware safeParse để kiểm tra/parse query, trả 400 nếu sai; nếu đúng, đưa dữ liệu đã parse vào `res.locals.courtsQuery` rồi gọi `next()`.
 - Controller lấy dữ liệu đã kiểm tra, gọi service và chọn HTTP status/JSON response. Lỗi async chuyển tới error handler chung trong app.
+- App/router export trực tiếp; controller gọi hàm service, service dùng Prisma chung từ `lib/prisma.ts`, không truyền client qua chuỗi factory.
 - Service xử lý quy tắc truy vấn (chỉ sân hoạt động, lọc/phân trang) và gọi Prisma trực tiếp; không phụ thuộc Express request/response.
 - `config` đọc cấu hình; `lib` khởi tạo Prisma dùng chung; `scripts` chứa các lệnh chạy riêng. `app.ts` gắn module/error handler; `server.ts` mở cổng.
 
 Ví dụ request: `GET /courts` → `validateListCourts` → controller `listCourts` → service `listCourts` → Prisma/PostgreSQL → controller trả JSON. Module auth sẽ theo cùng cách chia khi được triển khai; hiện chưa tạo module rỗng.
 
-## Cách chạy, test và demo
+## Cách chạy và demo
 
-**Đang thiết lập FB-003.** PostgreSQL local đã chạy và backend Express/TypeScript tối thiểu có `GET /health`. Đã kiểm chứng SELECT 1 qua Prisma và áp dụng migration User. Migration Branch/Court đã kiểm tra SQL trên DB test riêng và áp dụng thành công vào DB phát triển; đã xác nhận PK/FK/CHECK/unique thực tế. Đã seed một chi nhánh và ba sân demo, chạy lại không tạo trùng. Frontend React/Vite đã gọi GET /courts để hiển thị sân từ PostgreSQL. Có test API danh sách sân trên DB riêng; chưa có auth/booking.
+**FB-003 đã hoàn tất.** PostgreSQL local đã chạy và backend Express/TypeScript tối thiểu có `GET /health`. Đã kiểm chứng SELECT 1 qua Prisma và áp dụng migration User. Migration Branch/Court đã kiểm tra SQL trên DB test riêng và áp dụng thành công vào DB phát triển; đã xác nhận PK/FK/CHECK/unique thực tế. Đã seed một chi nhánh và ba sân demo, chạy lại không tạo trùng. Frontend React/Vite đã gọi GET /courts để hiển thị sân từ PostgreSQL. Bộ test tự động đã gỡ theo yêu cầu; chưa có auth/booking.
 
 Chạy các lệnh sau trên **máy local**, tại thư mục gốc repo:
 
@@ -130,7 +132,7 @@ npm run build
 npm start
 ```
 
-Đã kiểm chứng ngày 2026-11-05: PostgreSQL healthy; psql trong container xác nhận database/user `football_booking` và UTC; backend check/build pass, cả start và dev trả HTTP 200 với JSON mong đợi. Đã kiểm chứng kết nối PostgreSQL từ backend qua Prisma bằng SELECT 1 (xem bên dưới). Đã có script tạo DB test riêng cho SQL migration Branch/Court; cấu hình integration test API còn thiếu. Không dùng database phát triển để reset/test tự động.
+Đã kiểm chứng ngày 2026-11-05: PostgreSQL healthy; psql trong container xác nhận database/user `football_booking` và UTC; backend check/build pass, cả start và dev trả HTTP 200 với JSON mong đợi. Đã kiểm chứng kết nối PostgreSQL từ backend qua Prisma bằng SELECT 1 (xem bên dưới).
 
 ### Chạy frontend React/Vite
 
@@ -182,15 +184,7 @@ Mong đợi HTTP 200, `success: true`, `data` sân và `meta` phân trang. Vite 
 
 Đường chạy: `CourtsSection.tsx` → Vite proxy → `app.ts` → courts routes/validation/controller/service → Prisma → PostgreSQL → JSON → thẻ sân. Đây là giá hiện hành, chưa có giờ trống hoặc giữ chỗ/giữ giá. UI hiện chưa có bộ lọc; chỉ phân trang, API đã hỗ trợ bộ lọc.
 
-Test trên **máy local** tại `backend/`, khi service db healthy và dependencies đã cài:
-
-```bash
-npm run test:courts
-```
-
-Script `scripts/check-courts-api.sh` tạo DB test tên riêng từng lượt, áp dụng SQL migration và fixture rồi dùng Node test runner có sẵn (qua tsx) kiểm tra HTTP thật với PostgreSQL. Không thêm dependency test ở bước này; Vitest/Supertest trong kế hoạch test tổng thể chưa thiết lập. Thiếu Docker/CREATEDB khiến script dừng; test không nhận tên DB phát triển. DB test được giữ để xem, không drop/reset DB hiện hữu.
-
-Đã chạy 2026-11-05: backend/frontend build pass; test báo 28 pass, 0 fail (9 nhóm cấp đầu và 19 kiểm tra validation con). Có kiểm tra active-only, AND filters, thứ tự/allowlist response, pagination, query sai/lặp, rỗng và lỗi database giả lập trả 500 an toàn. HTTP trực tiếp và qua Vite trả ba sân seed. Chưa kiểm chứng browser render/retry/pagination trực quan do browser host unavailable; chưa test booking/auth/concurrency.
+Bộ test tự động và cấu hình test đã được gỡ ngày 2026-11-06 theo yêu cầu. Kiểm tra kiểu bằng `npm run check`, build bằng `npm run build`; kiểm tra API thủ công bằng các lệnh HTTP ở trên.
 
 ### Kiểm tra kết nối Prisma với DB local
 
@@ -226,15 +220,6 @@ Seed dùng UUID cố định và `upsert` theo ID với `update: {}`: thêm bả
 
 Đã kiểm chứng 2026-11-05: check/build pass; chạy seed hai lần exit 0; psql xác nhận 1 Branch, 3 Court, 0 User. Chưa kiểm tra rollback lỗi seed hoặc tạo tài khoản demo.
 
-### Kiểm tra SQL migration Branch/Court
-
-Chạy trên máy local tại thư mục gốc repo, khi service `db` đang healthy:
-
-```bash
-bash scripts/check-branch-court-migration.sh
-```
-
-Script tạo database test mới có tên riêng cho từng lượt, chạy SQL migration và kiểm tra CHECK/FK/unique. Mong đợi 15 nhóm kiểm tra đạt, exit 0, dữ liệu thử rollback về 0 Branch/0 Court. Database test được giữ lại để xem; không reset DB phát triển. Nếu thiếu quyền CREATEDB hoặc Docker chưa chạy, lệnh sẽ dừng với lỗi. Đây là test SQL, chưa kiểm tra Prisma migration engine hoặc API. Kết quả và giới hạn tại [biên bản kiểm chứng](docs/BRANCH_COURT_TEST.md).
 
 ## Khi nào đủ để đưa vào CV?
 
