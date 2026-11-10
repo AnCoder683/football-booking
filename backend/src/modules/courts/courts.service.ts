@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma.js';
-import type { ListCourtsQuery } from './courts.validation.js';
+import type { ListCourtsQuery } from './courts.schema.js';
 
 export async function listCourts({ page, limit, branchId, playersPerTeam }: ListCourtsQuery) {
   const where = {

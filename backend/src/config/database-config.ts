@@ -12,6 +12,25 @@ function required(name: string): string {
 }
 
 export function getDatabaseUrl(): string {
+  if (process.env.NODE_ENV === 'test') {
+    const testUrl = required('TEST_DATABASE_URL');
+    if (!URL.canParse(testUrl)) {
+      throw new Error('TEST_DATABASE_URL must be a valid URL');
+    }
+
+    const url = new URL(testUrl);
+    if (url.protocol !== 'postgresql:' && url.protocol !== 'postgres:') {
+      throw new Error('TEST_DATABASE_URL must use PostgreSQL');
+    }
+    if (url.pathname !== '/football_booking_test' || url.search || url.hash) {
+      throw new Error('TEST_DATABASE_URL must point to football_booking_test without query parameters or fragments');
+    }
+    if (required('POSTGRES_DB') === 'football_booking_test') {
+      throw new Error('Development and test databases must have different names');
+    }
+    return testUrl;
+  }
+
   const user = encodeURIComponent(required('POSTGRES_USER'));
   const password = encodeURIComponent(required('POSTGRES_PASSWORD'));
   const database = encodeURIComponent(required('POSTGRES_DB'));

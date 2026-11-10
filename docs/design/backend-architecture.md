@@ -16,11 +16,11 @@
 | Phần dùng chung | config đọc cấu hình; lib khởi tạo Prisma; scripts chứa seed/check-db |
 | Response | Theo api-common.md và contract từng endpoint; không trả SQL/stack/secret |
 
-Ví dụ hiện có: [routes](../../backend/src/modules/courts/courts.routes.ts), [validation](../../backend/src/modules/courts/courts.validation.ts), [controller](../../backend/src/modules/courts/courts.controller.ts), [service](../../backend/src/modules/courts/courts.service.ts). Cây thư mục đầy đủ nằm tại [README](../../README.md#tổ-chức-backend).
+Ví dụ hiện có: [routes](../../backend/src/modules/courts/courts.routes.ts), [schema](../../backend/src/modules/courts/courts.schema.ts), [validation](../../backend/src/middlewares/validate-query.ts), [controller](../../backend/src/modules/courts/courts.controller.ts), [service](../../backend/src/modules/courts/courts.service.ts). Cây thư mục đầy đủ nằm tại [README](../../README.md#tổ-chức-backend).
 
 ## Validation bằng Zod — đã duyệt 2026-11-05
 
-Người học yêu cầu “validate bằng zod đi”. Đã cài Zod 4.6.7 và chuyển GET /courts sang schema trong courts.validation.ts:
+Người học yêu cầu “validate bằng zod đi”. Đã cài Zod 4.6.7. Cập nhật 2026-11-09 theo yêu cầu người học: quy tắc GET /courts nằm trong courts.schema.ts; middleware HTTP dùng chung là higher-order function `validateQuery(schema)` tại src/middlewares/validate-query.ts. Dữ liệu query đã parse đặt tại `res.locals.query`; chưa thêm middleware body/params.
 
 - Schema đặt trong module, dùng safeParse; dữ liệu hợp lệ truyền qua res.locals, không sửa trực tiếp req.query.
 - Kiểu đầu ra suy ra từ schema bằng z.infer, tránh viết type trùng với schema.

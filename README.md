@@ -67,6 +67,8 @@ backend/src/
 │   └── database-config.ts
 ├── lib/
 │   └── prisma.ts
+├── middlewares/
+│   └── validate-query.ts
 ├── scripts/
 │   ├── check-db.ts
 │   └── seed.ts
@@ -74,19 +76,19 @@ backend/src/
 └── modules/
     └── courts/
         ├── courts.routes.ts
-        ├── courts.validation.ts
+        ├── courts.schema.ts
         ├── courts.controller.ts
         └── courts.service.ts
 ```
 
 - Routes khai báo URL/method và nối validation với controller.
-- Validation dùng schema Zod trong module và middleware safeParse để kiểm tra/parse query, trả 400 nếu sai; nếu đúng, đưa dữ liệu đã parse vào `res.locals.courtsQuery` rồi gọi `next()`.
+- Schema (`courts.schema.ts`) khai báo quy tắc query và kiểu dữ liệu đầu ra. Middleware dùng chung `validateQuery(schema)` trong `middlewares/validate-query.ts` dùng safeParse để kiểm tra/parse query, trả 400 nếu sai; nếu đúng, đưa dữ liệu đã parse vào `res.locals.query` rồi gọi `next()`.
 - Controller lấy dữ liệu đã kiểm tra, gọi service và chọn HTTP status/JSON response. Lỗi async chuyển tới error handler chung trong app.
 - App/router export trực tiếp; controller gọi hàm service, service dùng Prisma chung từ `lib/prisma.ts`, không truyền client qua chuỗi factory.
 - Service xử lý quy tắc truy vấn (chỉ sân hoạt động, lọc/phân trang) và gọi Prisma trực tiếp; không phụ thuộc Express request/response.
 - `config` đọc cấu hình; `lib` khởi tạo Prisma dùng chung; `scripts` chứa các lệnh chạy riêng. `app.ts` gắn module/error handler; `server.ts` mở cổng.
 
-Ví dụ request: `GET /courts` → `validateListCourts` → controller `listCourts` → service `listCourts` → Prisma/PostgreSQL → controller trả JSON. Module auth sẽ theo cùng cách chia khi được triển khai; hiện chưa tạo module rỗng.
+Ví dụ request: `GET /courts` → `validateQuery(listCourtsQuerySchema)` → controller `listCourts` → service `listCourts` → Prisma/PostgreSQL → controller trả JSON. Module auth sẽ theo cùng cách chia khi được triển khai; hiện chưa tạo module rỗng.
 
 ## Cách chạy và demo
 
@@ -111,6 +113,7 @@ Chạy backend trong terminal local:
 ```bash
 cd backend
 npm ci
+npx --no-install prisma generate
 npm run dev
 ```
 
@@ -124,13 +127,13 @@ curl --include http://127.0.0.1:3000/health
 
 Mong đợi HTTP `200` và `{"status":"ok"}`. Endpoint chỉ xác nhận backend nhận request, chưa truy vấn database. Nếu không kết nối được, kiểm tra backend còn chạy và đúng cổng.
 
-Kiểm tra kiểu/build và chạy JavaScript đã build, tại `backend/` trên máy local (dừng dev trước để tránh trùng cổng):
+Kiểm tra kiểu tại `backend/` trên máy local:
 
 ```bash
 npm run check
-npm run build
-npm start
 ```
+
+Backend hiện chỉ giữ ba script `dev`, `test`, `check` cho phần đang học. Không có hook tự sinh Prisma Client; chạy `npx --no-install prisma generate` sau khi cài dependency hoặc thay đổi schema. Script build/start sẽ bổ sung khi học tới phần đó.
 
 Đã kiểm chứng ngày 2026-11-05: PostgreSQL healthy; psql trong container xác nhận database/user `football_booking` và UTC; backend check/build pass, cả start và dev trả HTTP 200 với JSON mong đợi. Đã kiểm chứng kết nối PostgreSQL từ backend qua Prisma bằng SELECT 1 (xem bên dưới).
 
@@ -184,7 +187,7 @@ Mong đợi HTTP 200, `success: true`, `data` sân và `meta` phân trang. Vite 
 
 Đường chạy: `CourtsSection.tsx` → Vite proxy → `app.ts` → courts routes/validation/controller/service → Prisma → PostgreSQL → JSON → thẻ sân. Đây là giá hiện hành, chưa có giờ trống hoặc giữ chỗ/giữ giá. UI hiện chưa có bộ lọc; chỉ phân trang, API đã hỗ trợ bộ lọc.
 
-Bộ test tự động và cấu hình test đã được gỡ ngày 2026-11-06 theo yêu cầu. Kiểm tra kiểu bằng `npm run check`, build bằng `npm run build`; kiểm tra API thủ công bằng các lệnh HTTP ở trên.
+Bộ test cũ đã được gỡ ngày 2026-11-06. Ngày 2026-11-09 đã cài lại Vitest/Supertest và thêm `npm test` (chạy tại backend). Bài đầu ở `backend/tests/courts.test.ts` tạo một chi nhánh với sân active/inactive, gọi GET /courts theo branchId và kiểm tra chỉ trả sân active; xác nhận DB thực tế là football_booking_test trước khi ghi, dọn riêng dữ liệu vừa tạo trong finally và disconnect sau test. DB test `football_booking_test` đã tạo lại và áp dụng hai migration; script test đặt `NODE_ENV=test` để chọn `TEST_DATABASE_URL` trong `.env` gốc. Kiểm tra kiểu source bằng `npm run check` (chưa bao gồm thư mục tests); kiểm tra API thủ công bằng các lệnh HTTP ở trên.
 
 ### Kiểm tra kết nối Prisma với DB local
 
@@ -196,12 +199,13 @@ Chạy trên **máy local** từ thư mục gốc repo:
 docker compose up -d --wait db
 cd backend
 npm ci
-npm run db:check
+npx --no-install prisma generate
+npx --no-install tsx src/scripts/check-db.ts
 ```
 
-`db:check` tự sinh Prisma Client rồi chạy `SELECT 1 AS value` và đóng kết nối. Mong đợi `Database connection OK: SELECT 1 returned 1`, exit 0. Nó không mở HTTP server, tạo bảng hoặc sửa dữ liệu. Nếu lỗi, kiểm tra service db đang healthy, cổng và các biến `.env`; không gửi mật khẩu hoặc URL kết nối trong log. Lượt kiểm tra 2026-11-05 ban đầu thất bại khi DB đang dừng; khởi động lại DB healthy rồi chạy lại đã pass.
+Sau khi sinh Prisma Client, lệnh `tsx` chạy `SELECT 1 AS value` và đóng kết nối. Mong đợi `Database connection OK: SELECT 1 returned 1`, exit 0. Nó không mở HTTP server, tạo bảng hoặc sửa dữ liệu. Nếu lỗi, kiểm tra service db đang healthy, cổng và các biến `.env`; không gửi mật khẩu hoặc URL kết nối trong log. Lượt kiểm tra 2026-11-05 ban đầu thất bại khi DB đang dừng; khởi động lại DB healthy rồi chạy lại đã pass.
 
-`prisma/schema.prisma` hiện có User/Role, Branch và Court; hai migration đã áp dụng local. `npm run prisma:generate` sinh mã client vào `backend/src/generated/prisma/` (Git bỏ qua); check/build cũng tự sinh client trước khi chạy. Generate chỉ sinh code, không phải migration.
+`prisma/schema.prisma` hiện có User/Role, Branch và Court; hai migration đã áp dụng local. `npx --no-install prisma generate` sinh mã client vào `backend/src/generated/prisma/` (Git bỏ qua). Generate chỉ sinh code, không phải migration.
 
 ### Seed dữ liệu sân mẫu
 
@@ -211,7 +215,8 @@ Chạy trên **máy local**, từ thư mục gốc repo sau khi DB healthy và �
 
 ```bash
 cd backend
-npm run db:seed
+npx --no-install prisma generate
+npx --no-install prisma db seed
 ```
 
 Lệnh sinh Prisma Client rồi chạy `prisma db seed` → `tsx src/scripts/seed.ts`, thêm một Chi nhánh Demo với địa chỉ minh họa và ba sân 5/7/11 có giá mẫu 150.000/250.000/400.000 VND mỗi 30 phút. Mong đợi `Seed OK` và bảng ba sân, exit 0. Nếu thiếu bảng hoặc DB chưa chạy, seed báo lỗi; kiểm tra migration/kết nối và không gửi secret trong log.
