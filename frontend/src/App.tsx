@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { Link, Route, Routes } from 'react-router';
 import HomePage from './pages/HomePage';
 import RegisterSection from './modules/auth/RegisterSection';
+import LoginSection, { type LoginData } from './modules/auth/LoginSection';
 
 export default function App() {
+  // shortcut: reload clears the session; restore it when the refresh endpoint is implemented.
+  const [session, setSession] = useState<LoginData | null>(null);
+
   return (
     <>
       <a className="skip-link" href="#main">Đến nội dung chính</a>
@@ -11,13 +16,21 @@ export default function App() {
           <span className="brand-mark" aria-hidden="true">FB</span>
           <span>Football<span className="brand-light"> Booking</span></span>
         </Link>
-        <Link className="primary-link" to="/register">Đăng ký</Link>
+        <nav className="auth-nav" aria-label="Tài khoản">
+          {session ? <span className="user-greeting">Chào, {session.user.name}</span> : (
+            <>
+              <Link to="/login">Đăng nhập</Link>
+              <Link className="primary-link" to="/register">Đăng ký</Link>
+            </>
+          )}
+        </nav>
       </header>
 
       <main id="main" className="page-width">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/register" element={<RegisterSection />} />
+          <Route path="/login" element={<LoginSection onLogin={setSession} />} />
           <Route path="*" element={<p>Không tìm thấy trang. <Link to="/">Về trang chủ</Link></p>} />
         </Routes>
       </main>

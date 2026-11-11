@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { registerBodySchema } from '../src/modules/auth/auth.schema.js';
+import { loginBodySchema, registerBodySchema } from '../src/modules/auth/auth.schema.js';
 const validBody = {
   name: 'Nguyễn An',
   email: 'an@example.com',
@@ -49,4 +49,35 @@ test.each([
   { role: 'ADMIN' }, { isBookingBlocked: false }, { passwordHash: 'hash' }, { extra: 'value' },
 ])('registration rejects extra fields: %j', (fields) => {
   expect(registerBodySchema.safeParse({ ...validBody, ...fields }).success).toBe(false);
+});
+
+test('login normalizes email while preserving the password', () => {
+  expect(loginBodySchema.parse({ email: '  AN+tag@EXAMPLE.COM  ', password: ' abc ' }))
+    .toEqual({ email: 'an+tag@example.com', password: ' abc ' });
+});
+
+test.each(['a', ' ', 'a'.repeat(72), '😀'.repeat(18)])(
+  'login accepts a nonempty password within the byte limit: %s', (password) => {
+    expect(loginBodySchema.parse({ email: validBody.email, password }).password).toBe(password);
+  },
+);
+
+test.each(['', 'a'.repeat(73), '😀'.repeat(18) + 'a'])(
+  'login rejects an empty or oversized password: %s', (password) => {
+    expect(loginBodySchema.safeParse({ email: validBody.email, password }).success).toBe(false);
+  },
+);
+
+test.each(['email', 'password'] as const)('login requires a string %s', (field) => {
+  for (const value of [undefined, null, 123, [], {}]) {
+    expect(loginBodySchema.safeParse({ email: validBody.email, password: 'abc', [field]: value }).success).toBe(false);
+  }
+});
+
+test.each(['invalid-email', `${'a'.repeat(243)}@example.com`])('login rejects an invalid email: %s', (email) => {
+  expect(loginBodySchema.safeParse({ email, password: 'abc' }).success).toBe(false);
+});
+
+test('login rejects extra fields including role', () => {
+  expect(loginBodySchema.safeParse({ email: validBody.email, password: 'abc', role: 'ADMIN' }).success).toBe(false);
 });

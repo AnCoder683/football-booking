@@ -13,9 +13,13 @@ Mức hiểu giữ nguyên theo câu trả lời thực tế; không suy ra đã
 
 - **G1-07 — ưu tiên ôn khi xin việc theo yêu cầu người học:** Prisma schema so với ràng buộc SQL, quy trình và lịch sử migration; [câu hỏi ôn gắn với Branch/Court thực tế](learning/stage-1.md#g1-07--ôn-prisma-và-sql-migration-khi-xin-việc). Cần ôn, chưa có câu trả lời độc lập.
 
-- **Điểm dừng hiện hành 2026-11-11:** đã có ảnh đăng ký thành công/email trùng; vừa đổi FE sang Axios theo yêu cầu, chờ kiểm tra lại trình duyệt. Không trace FE quá sâu hoặc lấy học auth.test.ts làm điều kiện tiếp tục. [Review đăng ký và concurrency](learning/stage-1.md#review-đăng-ký-và-concurrency--2026-11-11) ghi riêng lời người học và phần mentor làm rõ; chưa kết luận hiểu toàn auth. FB-004 IN_PROGRESS; bằng chứng kỹ thuật/bước tiếp theo xem PROGRESS.
+- **Điểm dừng hiện hành 2026-11-11:** FB-004 IN_PROGRESS; POST login đã có CSRF/rate limit/schema/service/JWT/phiên hash/cookie; 7 test login HTTP/PostgreSQL test và toàn bộ 87/87 backend test pass. FE login đã có code/build/self-check giả lập; chờ người học kiểm tra browser. Chưa handler me/refresh/logout. Bằng chứng kỹ thuật/bước tiếp theo tại PROGRESS. Không trace FE sâu/test vụn hoặc lấy học auth.test.ts làm điều kiện tiếp tục. [Review đăng ký và concurrency](learning/stage-1.md#review-đăng-ký-và-concurrency--2026-11-11) giữ riêng lời người học; không nâng mức hiểu từ xác nhận đã review/đã hiểu.
 
 ## Cần hướng dẫn trực quan khi code
+
+- **Buổi sau — tracing login theo yêu cầu 2026-11-11:** lần lượt luồng login → auth.login.test.ts → csrf-protection.ts, mỗi lượt một đoạn nhỏ rồi chờ; [điểm bắt đầu và giới hạn](learning/stage-2.md#bàn-giao-tracing-login--buổi-sau). Không bắt đầu tính năng mới trước phần review này.
+
+- **CSRF — giải thích lại khi người học cần:** đã đồng ý gắn middleware riêng cho auth, chưa chứng minh hiểu; xem [yêu cầu và nội dung cần ôn](learning/stage-2.md#csrf--cần-giải-thích-lại-khi-người-học-yêu-cầu).
 
 - **Mỗi khi gặp khóa:** dừng lại, đi chậm, trace từng request giữ/chờ/đọc lại/nhả khóa; chờ người học trước khi thêm tình huống. Áp dụng cho khóa DB và phối hợp frontend; xem [yêu cầu và bằng chứng](learning/stage-3.md#nhu-cầu-đi-chậm-khi-gặp-khóa--2026-11-04). Không nâng mức hiểu từ xác nhận đã hình dung.
 

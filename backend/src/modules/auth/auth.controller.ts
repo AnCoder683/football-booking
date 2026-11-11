@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
-import type { RegisterBody } from './auth.schema.js';
-import { register } from './auth.service.js';
+import type { LoginBody, RegisterBody } from './auth.schema.js';
+import { login, register } from './auth.service.js';
 
 type RegisterLocals = { body: RegisterBody };
 
@@ -22,5 +22,38 @@ export async function registerController(_req: Request, res: Response<unknown, R
     success: true,
     message: 'Đăng ký thành công. Vui lòng đăng nhập.',
     data: user,
+  });
+}
+
+type LoginLocals = { body: LoginBody };
+
+export async function loginController(_req: Request, res: Response<unknown, LoginLocals>) {
+  res.set('Cache-Control', 'no-store');
+  const result = await login(res.locals.body);
+
+  if (result === null) {
+    res.status(401).json({
+      success: false,
+      error: {
+        code: 'INVALID_CREDENTIALS',
+        message: 'Email hoặc mật khẩu không đúng.',
+      },
+    });
+    return;
+  }
+
+  const { refreshToken, refreshTokenExpiresAt, ...data } = result;
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    expires: refreshTokenExpiresAt,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: 'Đăng nhập thành công',
+    data,
   });
 }

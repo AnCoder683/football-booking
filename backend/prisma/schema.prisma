@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
   moduleFormat = "esm"
 }
 
@@ -14,14 +14,27 @@ enum Role {
 }
 
 model User {
-  id               String   @id @default(uuid()) @db.Uuid
-  name             String   @db.Text
-  email            String   @unique @db.Text
-  passwordHash     String   @db.Text
-  role             Role     @default(CUSTOMER)
-  isBookingBlocked Boolean  @default(false)
-  createdAt        DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime @updatedAt @db.Timestamptz(3)
+  id               String         @id @default(uuid()) @db.Uuid
+  name             String         @db.Text
+  email            String         @unique @db.Text
+  passwordHash     String         @db.Text
+  role             Role           @default(CUSTOMER)
+  isBookingBlocked Boolean        @default(false)
+  createdAt        DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @db.Timestamptz(3)
+  refreshTokens    RefreshToken[]
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  familyId  String    @db.Uuid
+  tokenHash String    @unique @db.Text
+  expiresAt DateTime  @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 }
 
 model Branch {

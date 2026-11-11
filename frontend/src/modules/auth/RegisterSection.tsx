@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router';
 
 type RegisterResponse = {
   success: boolean;
@@ -62,7 +63,7 @@ export default function RegisterSection() {
         <p className="eyebrow">THAM GIA CÙNG ĐỒNG ĐỘI</p>
         <h1 id="register-title">Tạo tài khoản của bạn</h1>
         <p>Đăng ký để chuẩn bị cho những trận bóng tiếp theo.</p>
-        <p>Đã có tài khoản? Chức năng đăng nhập sẽ được bổ sung sau.</p>
+        <p>Đã có tài khoản? <Link to="/login">Đăng nhập tại đây</Link>.</p>
       </div>
 
       <form className="register-form" onSubmit={handleSubmit} aria-busy={isSubmitting}>
@@ -84,7 +85,7 @@ export default function RegisterSection() {
         {error && <p className="register-message register-error" role="alert">{error}</p>}
         {success && (
           <p className="register-message" role="status">
-            Đăng ký thành công! Tài khoản đã được tạo. Bạn có thể đăng nhập khi chức năng đăng nhập được bổ sung.
+            Đăng ký thành công! <Link to="/login">Đăng nhập ngay</Link> để tiếp tục.
           </p>
         )}
       </form>

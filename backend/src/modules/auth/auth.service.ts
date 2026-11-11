@@ -1,7 +1,10 @@
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { Prisma } from '../../generated/prisma/client.js';
 import { prisma } from '../../lib/prisma.js';
-import type { RegisterBody } from './auth.schema.js';
+import { getJwtAccessSecret } from '../../config/auth-config.js';
+import type { LoginBody, RegisterBody } from './auth.schema.js';
 
 export async function register(body: RegisterBody) {
   const passwordHash = await bcrypt.hash(body.password, 12);
@@ -36,4 +39,51 @@ export async function register(body: RegisterBody) {
     }
     throw error;
   }
+}
+
+export async function login(body: LoginBody) {
+  const user = await prisma.user.findUnique({
+    where: { email: body.email },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      passwordHash: true,
+      role: true,
+      isBookingBlocked: true,
+    },
+  });
+  if (!user) return null;
+
+  const passwordMatches = await bcrypt.compare(body.password, user.passwordHash);
+  if (!passwordMatches) return null;
+
+  const refreshToken = randomBytes(32).toString('base64url');
+  const tokenHash = createHash('sha256').update(refreshToken).digest('hex');
+
+  const { passwordHash, ...publicUser } = user;
+  const accessToken = jwt.sign({ role: user.role }, getJwtAccessSecret(), {
+    algorithm: 'HS256',
+    subject: user.id,
+    expiresIn: 900,
+  });
+
+  const refreshTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  await prisma.refreshToken.create({
+    data: {
+      userId: user.id,
+      familyId: randomUUID(),
+      tokenHash,
+      expiresAt: refreshTokenExpiresAt,
+    },
+  });
+
+  return {
+    refreshToken,
+    refreshTokenExpiresAt,
+    accessToken,
+    tokenType: 'Bearer',
+    expiresIn: 900,
+    user: publicUser,
+  };
 }

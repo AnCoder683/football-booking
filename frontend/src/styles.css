@@ -12,6 +12,8 @@ body { margin: 0; }
 a { color: inherit; }
 .page-width { width: min(1160px, calc(100% - 80px)); margin-inline: auto; }
 .header { min-height: 104px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.auth-nav { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; font-size: 14px; }
+.user-greeting { overflow-wrap: anywhere; }
 .brand { display: flex; align-items: center; gap: 12px; font-size: 19px; font-weight: 750; text-decoration: none; }
 .brand-light { font-weight: 400; }
 .brand-mark { display: grid; place-items: center; width: 39px; height: 39px; background: #193d32; color: #e0f399; font-size: 14px; border-radius: 50%; }
@@ -75,7 +77,7 @@ h3 { margin: 0 0 8px; font-size: 16px; font-weight: 600; }
   .court-grid { grid-template-columns: 1fr; }
   .empty-state { flex-wrap: wrap; }
   .page-width { width: calc(100% - 36px); }
-  .header { min-height: 82px; }
+  .header { min-height: 82px; flex-wrap: wrap; padding-block: 16px; }
   .brand { font-size: 15px; gap: 9px; }
   .brand-mark { width: 33px; height: 33px; font-size: 12px; }
   .hero { grid-template-columns: 1fr; }

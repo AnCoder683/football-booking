@@ -41,6 +41,8 @@ Người học đã duyệt phương án mentor trình bày: access JWT 15 phút
 
 ### Bảng RefreshToken — bộ trường và hướng khóa DB đã duyệt
 
+**Triển khai schema 2026-11-11:** đã thêm model RefreshToken và quan hệ User trong Prisma, format/validate pass. Đã tạo file SQL migration 20261111044031_add_refresh_token bằng diff hai schema local; đã áp dụng lên football_booking_test và kiểm chứng ràng buộc SQL bằng transaction rollback; đã backup/apply DB local và generate client thành công, dữ liệu cũ giữ nguyên; chưa code cấp refresh token. Index truy vấn dự kiến chưa được thêm.
+
 | Trường | Ý nghĩa |
 | --- | --- |
 | `id` | Định danh bản ghi UUID |
@@ -74,7 +76,7 @@ Token rõ chỉ xuất hiện khi tạo và trong cookie/request cần thiết; 
 - API đăng nhập/refresh/logout, nguồn thời gian, kiểm tra expiry tại đúng ranh giới, response không cache dữ liệu token, không log cookie/Authorization, rate limit phù hợp khi triển khai. Không dùng access token thay refresh token hoặc ngược lại.
 - Triển khai/kiểm chứng cookie và CSRF theo mục đã duyệt bên dưới, bao gồm Vite proxy local, custom header và Origin/Referer. Topology production là giả định same-origin cần kiểm chứng khi triển khai; không coi HttpOnly/SameSite tự giải quyết CSRF.
 - Kiểm thử rotation, token hết hạn/sai/thu hồi, dùng lại token cũ thu hồi đúng nhóm phiên, hai refresh đồng thời, retry/mất kết nối/nhiều tab, logout không refresh lại được, nhóm phiên khác vẫn hoạt động, blocked user vẫn refresh nhưng không đặt mới. Dùng database test riêng, không ghi dữ liệu/token thật vào tài liệu.
-- Chưa có schema/code/migration/test; nếu thêm bảng và luồng này cần đánh giá lại ước lượng dự án, không tự ghi số giờ mới.
+- Model Prisma và SQL migration đã thêm ngày 2026-11-11; migration/ràng buộc đã kiểm chứng trên DB test và áp dụng DB local sau backup, đã generate client; chưa code cấp refresh token/test luồng. Khi triển khai bảng và luồng này cần đánh giá lại ước lượng dự án, không tự ghi số giờ mới.
 - Tham khảo: [RFC 9700 §4.14](https://www.rfc-editor.org/rfc/rfc9700.html#section-4.14) mô tả bảo vệ refresh token/rotation trong OAuth; app này chưa triển khai OAuth, chỉ tham khảo nguyên tắc. [OWASP Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) về cookie HttpOnly/Secure/SameSite; [OWASP CSRF](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html) để hoàn thiện bảo vệ request dùng cookie.
 
 ## Đăng ký khách — hợp đồng API đã duyệt 2026-11-03
@@ -104,12 +106,16 @@ Token rõ chỉ xuất hiện khi tạo và trong cookie/request cần thiết; 
 
 ## Đăng nhập — POST /auth/login (hợp đồng chính đã duyệt 2026-11-03)
 
-- Công khai, dùng chung CUSTOMER/ADMIN; body chỉ email/password, bắt buộc string, không null/field thừa. email chuẩn hóa/validate theo đăng ký; password giữ nguyên, không trim, không ép kiểm tra độ mạnh khi đăng nhập. Giới hạn login còn cần chốt trước code; đề xuất 1–128 Unicode code point trước đây cần điều chỉnh theo lựa chọn bcrypt/giới hạn 72 byte đã duyệt cho đăng ký, không áp tối thiểu 15 của đăng ký thành một lỗi validation ở login.
+**Endpoint hoạt động — cập nhật 2026-11-11:** người học đã duyệt rate limit riêng cho login: 5 request/15 phút/IP sau CSRF, tính cả thành công/sai mật khẩu/body sai; vượt trả 429/RATE_LIMIT_EXCEEDED, có Retry-After. Dùng MemoryStore riêng với register; restart mất bộ đếm, chưa hỗ trợ nhiều instance. Đã gắn loginLimiter → validateBody(loginBodySchema) → loginController sau middleware CSRF. express.json chỉ parse JSON; form/text không được nhận và bị validation trả 400. Controller đặt Cache-Control: no-store trước gọi service. 7 test HTTP/PostgreSQL test cho login pass; toàn backend 87/87 test và TypeScript pass. FE login đã có form/route/state bộ nhớ và build/self-check giả lập pass; chưa login browser. Refresh/logout/me chưa có handler. Các ghi chú chưa mở route hoặc chưa test HTTP/DB bên dưới là trạng thái trước cập nhật này.
+
+**Cập nhật triển khai 2026-11-11:** service đã tạo refresh token 32 byte/base64url, lưu SHA-256/familyId UUID mới/hạn 7 ngày; trả token và hạn nội bộ sang controller. Controller đặt cookie tên `refreshToken`, HttpOnly, SameSite=Lax, Path=/, không Domain, Expires dùng cùng hạn lưu DB; Secure khi NODE_ENV=production, local HTTP không Secure. Hai trường nội bộ được loại khỏi JSON. TypeScript và self-check controller/service giả lập với Express serialize cookie thật đã pass; chưa HTTP/browser hoặc kiểm chứng ghi phiên bằng PostgreSQL thật. Route login vẫn chưa gắn; CSRF/rate limit phải hoàn thiện trước khi mở endpoint. Các ghi chú chưa triển khai token/cookie bên dưới là trạng thái trước cập nhật này.
+
+- Công khai, dùng chung CUSTOMER/ADMIN; body chỉ email/password, bắt buộc string, không null/field thừa. email chuẩn hóa/validate theo đăng ký; password giữ nguyên, không trim, không ép kiểm tra độ mạnh khi đăng nhập. **Giới hạn đã duyệt 2026-11-11:** password không rỗng, tối đa 72 byte UTF-8; không trim, không áp tối thiểu 15 của đăng ký thành lỗi validation ở login. Email trim/chữ thường/đúng định dạng/tối đa 254 ký tự. Người học chốt schema, chưa là bằng chứng hiểu độc lập. Đã viết loginBodySchema và LoginBody; chưa gắn endpoint.
 - Thành công 200/success=true/message="Đăng nhập thành công", data {accessToken,tokenType:"Bearer",expiresIn:900,user:{id,name,email,role,isBookingBlocked}}. Access JWT 15 phút theo phương án đã duyệt.
 - Cấp refresh token hạn 7 ngày từ lúc đăng nhập qua cookie HttpOnly, lưu hash token vào DB theo mô hình phiên đã đề xuất; không trả refresh token trong JSON, không trả password/hash. Chính sách cookie/CSRF đã duyệt ở mục riêng; nhóm phiên và trường token còn hoàn thiện, không suy ra đã xong từ response này.
 - Email không có hoặc mật khẩu không khớp cùng trả 401/INVALID_CREDENTIALS, message="Email hoặc mật khẩu không đúng." Không cấp token khi thất bại. Body sai/thiếu/thừa trả 400/VALIDATION_ERROR/details.
 - isBookingBlocked=true vẫn đăng nhập được; không tự đổi trạng thái chặn khi đăng nhập. Tạo booking luôn kiểm tra cờ hiện hành, không chỉ tin bản sao trong token/response.
-- Hash/tham số, rate limit và xử lý phiên hiện tại khi đăng nhập lại còn thiết kế/kiểm chứng. Người học xác nhận “Ok.” cho body email/password, response 200/access token 15 phút/user, refresh cookie HttpOnly 7 ngày, lỗi 401/INVALID_CREDENTIALS và 400 validation, cho khách bị chặn đăng nhập. Chưa triển khai/test; giới hạn password ở login và chi tiết kỹ thuật phiên/cookie còn review riêng.
+- Hash/tham số, rate limit và xử lý phiên hiện tại khi đăng nhập lại còn thiết kế/kiểm chứng. Người học xác nhận “Ok.” cho body email/password, response 200/access token 15 phút/user, refresh cookie HttpOnly 7 ngày, lỗi 401/INVALID_CREDENTIALS và 400 validation, cho khách bị chặn đăng nhập. Schema đầu vào và phần service tìm user/so bcrypt đã triển khai/kiểm chứng riêng ngày 2026-11-11; service trả null khi thông tin sai; khi đúng ký access JWT HS256 hạn 900 giây (sub=user ID, role), trả accessToken/tokenType/expiresIn/user công khai. Đã có loginController trả 200/401 nhưng chưa gắn route. Refresh token/phiên/cookie và endpoint login chưa triển khai, chi tiết kỹ thuật còn review riêng.
 
 ## Tài khoản hiện tại — GET /auth/me (đã duyệt 2026-11-03)
 
@@ -179,6 +185,8 @@ Người học nói chưa rành CSRF, yêu cầu đề xuất phù hợp và gi�
 - Bảo vệ POST login/refresh/logout trước khi tạo/rotate/thu hồi phiên hoặc set/xóa cookie, gồm cả logout không có cookie. Register tạm miễn theo điều chỉnh 2026-11-10 ở trên. Các API đặt/hủy dùng Bearer vẫn kiểm tra xác thực/quyền như đã chốt; không chuyển chúng sang xác thực bằng cookie.
 
 ### Cơ chế đã duyệt
+
+**Triển khai middleware 2026-11-11:** csrfProtection kiểm tra X-CSRF-Protection: 1 và Origin khớp APP_ORIGIN; chỉ dùng Referer khi không có Origin, từ chối thiếu/sai bằng 403/CSRF_VALIDATION_FAILED trước handler. Đã gắn bằng authRouter.post(['/login', '/refresh', '/logout'], csrfProtection); chưa có handler endpoint tương ứng nên request hợp lệ còn đi tiếp tới 404, không tạo/rotate/thu hồi phiên. Register không bị áp middleware. TypeScript và self-check 16 ca/request cùng phạm vi router giả lập pass; chưa kiểm chứng HTTP/browser. Kiểm tra Content-Type và rate limit login vẫn chưa triển khai.
 
 1. Refresh cookie host-only (không Domain), Path=/, HttpOnly, SameSite=Lax và Secure trên HTTPS production. Cookie mới có thời hạn không vượt expiresAt của refresh token mới; cập nhật cookie theo hạn mới sau rotation thành công, không dùng phần thời gian còn lại của hạn đăng nhập ban đầu. Cookie xóa cùng tên/Path/Domain. Local HTTP có cấu hình riêng không Secure, chỉ dùng local; không hạ Secure production. Tên cookie cụ thể chốt khi triển khai.
 2. FE gửi header X-CSRF-Protection: 1 trên các POST auth được bảo vệ. Backend bắt buộc đúng header; đây là giá trị cố định công khai, không phải token bí mật và không thay thế refresh/access token. Áp dụng cả refresh/logout không body. Login/register chỉ nhận application/json, không ngầm nhận form hoặc text/plain.

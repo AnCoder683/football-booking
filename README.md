@@ -167,16 +167,19 @@ Các file chính:
 
 - `frontend/index.html`: trang HTML gốc và phần tử `root`.
 - `frontend/src/main.tsx`: gắn React vào `root`.
-- `frontend/src/App.tsx`: header/footer chung và route React Router: `/` là trang chủ, `/register` là trang đăng ký; URL không khớp hiện thông báo không tìm thấy.
+- `frontend/src/App.tsx`: header/footer chung và route React Router: `/` là trang chủ, `/register` là trang đăng ký, `/login` là trang đăng nhập; URL không khớp hiện thông báo không tìm thấy.
 - `frontend/src/pages/HomePage.tsx`: phần giới thiệu và danh sách sân trên trang chủ.
 - `frontend/src/modules/courts/CourtsSection.tsx`: gọi Axios lấy danh sách sân, trạng thái tải/lỗi/rỗng, thẻ sân và phân trang.
 - `frontend/src/modules/auth/RegisterSection.tsx`: form họ tên/email/mật khẩu, gửi đăng ký qua `/api/auth/register`, trạng thái đang gửi/thành công/lỗi; không tự đăng nhập.
+- `frontend/src/modules/auth/LoginSection.tsx`: form email/mật khẩu, gọi `/api/auth/login` với header CSRF; thành công lưu access token/user trong state App và về trang chủ, không lưu token vào localStorage/sessionStorage.
 - `frontend/src/styles.css`: màu sắc, bố cục và CSS cho màn hình nhỏ.
 - `frontend/vite.config.ts`: plugin React và cổng local.
 
 Đã chạy 2026-11-05: npm install báo 0 vulnerabilities; `npm run build` (gồm check) exit 0. Dev server sẵn sàng; HTTP trang gốc, main.tsx, App.tsx và CSS đều 200. Công cụ trình duyệt báo browser access host unavailable nên chưa xác nhận render, tương tác hoặc bố cục mobile trực quan. Chưa chạy preview.
 
-FE đăng ký (cập nhật 2026-11-11): nút Đăng ký trên header dẫn tới `/register` bằng React Router. Form dùng Axios gửi JSON qua Vite proxy tới `POST /auth/register`; danh sách sân cũng dùng Axios. Form kiểm tra mật khẩu theo cùng quy tắc ít nhất 15 Unicode code point/tối đa 72 byte UTF-8, giữ nguyên khoảng trắng; backend vẫn kiểm tra toàn bộ dữ liệu. Khi đang gửi, khóa form; thành công xóa dữ liệu form và hiển thị thông báo. Lỗi HTTP (gồm 409 email trùng, 429) lấy thông báo từ `error.response.data`; lỗi kết nối hiện thông báo chưa nhận được kết quả. Tải sân giữ AbortController để hủy request khi rời trang/đổi truy vấn ([tài liệu Axios](https://github.com/axios/axios-docs/blob/master/posts/en/cancellation.md)). Login chưa có. Có ảnh người học xác nhận đăng ký thành công và email trùng trước khi đổi Axios; sau đổi, build và self-check giả lập Axios adapter pass, ảnh người học xác nhận ca đăng ký thành công. Ca email trùng sau đổi Axios chưa có xác nhận trên trình duyệt.
+FE đăng ký (cập nhật 2026-11-11): nút Đăng ký trên header dẫn tới `/register` bằng React Router. Form dùng Axios gửi JSON qua Vite proxy tới `POST /auth/register`; danh sách sân cũng dùng Axios. Form kiểm tra mật khẩu theo cùng quy tắc ít nhất 15 Unicode code point/tối đa 72 byte UTF-8, giữ nguyên khoảng trắng; backend vẫn kiểm tra toàn bộ dữ liệu. Khi đang gửi, khóa form; thành công xóa dữ liệu form và hiển thị thông báo. Lỗi HTTP (gồm 409 email trùng, 429) lấy thông báo từ `error.response.data`; lỗi kết nối hiện thông báo chưa nhận được kết quả. Tải sân giữ AbortController để hủy request khi rời trang/đổi truy vấn ([tài liệu Axios](https://github.com/axios/axios-docs/blob/master/posts/en/cancellation.md)). Login đã bổ sung như cập nhật bên dưới. Có ảnh người học xác nhận đăng ký thành công và email trùng trước khi đổi Axios; sau đổi, build và self-check giả lập Axios adapter pass, ảnh người học xác nhận ca đăng ký thành công. Ca email trùng sau đổi Axios chưa có xác nhận trên trình duyệt.
+
+FE login (cập nhật 2026-11-11): mở <http://127.0.0.1:5173/login>, dùng tài khoản đã đăng ký. Form giữ nguyên password, chỉ kiểm tra không rỗng/tối đa 72 byte UTF-8, gửi JSON và X-CSRF-Protection: 1 qua Vite proxy cùng origin; trình duyệt tự quản lý cookie HttpOnly. Có trạng thái đang gửi, khóa form và hiển thị lỗi API/kết nối; không tự retry. Thành công về trang chủ và hiển thị tên trên header; access token chỉ giữ trong state React. Refresh/me/logout chưa có: tải lại trang mất state đăng nhập, chưa tự khôi phục hoặc gia hạn phiên. Build frontend và self-check handler với Axios/React/router/FormData giả lập pass; GET /login HTTP 200 và request login body rỗng qua proxy với CSRF hợp lệ trả 400/VALIDATION_ERROR. Browser access host unavailable nên chưa xác nhận hiển thị, cookie hoặc đăng nhập thật bằng trình duyệt.
 
 ### API danh sách sân và kết nối frontend
 
@@ -198,6 +201,8 @@ Bộ test cũ đã được gỡ ngày 2026-11-06. Ngày 2026-11-09 đã cài l�
 ### Kiểm tra kết nối Prisma với DB local
 
 Backend dùng Node 22.12+ trong nhánh 22 hoặc Node 24+, Prisma 7.10.1 và adapter PostgreSQL. Node tự đọc `.env` ở thư mục gốc repo; cấu hình trong `backend/src/config/database-config.ts` ghép POSTGRES_USER/PASSWORD/DB và DB_PORT thành URL kết nối tới `127.0.0.1`. Không cần tạo thêm `.env` trong backend hoặc nhập lại mật khẩu. Hiện cấu hình này dành cho backend chạy trực tiếp trên máy local.
+
+Access JWT đang triển khai: backend yêu cầu `JWT_ACCESS_SECRET` trong `.env` gốc trước khi mở HTTP server. Tạo giá trị ngẫu nhiên từ ít nhất 32 byte; cấu hình từ chối giá trị thiếu/rỗng, dưới 32 byte hoặc toàn khoảng trắng. `.env.example` chỉ để tên biến rỗng; không commit hoặc chia sẻ giá trị thật. POST /auth/login hiện đã cấp access JWT và refresh cookie; backend cũng yêu cầu APP_ORIGIN khớp origin frontend (local: http://127.0.0.1:5173) để kiểm tra CSRF.
 
 Chạy trên **máy local** từ thư mục gốc repo:
 

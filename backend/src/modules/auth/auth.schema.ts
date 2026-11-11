@@ -13,3 +13,12 @@ export const registerBodySchema = z.strictObject({
 });
 
 export type RegisterBody = z.infer<typeof registerBodySchema>;
+
+export const loginBodySchema = z.strictObject({
+  email: z.string().trim().toLowerCase().max(254).pipe(z.email()),
+  password: z.string().min(1).refine(value => Buffer.byteLength(value, 'utf8') <= 72, {
+    message: 'Mật khẩu không được vượt quá 72 byte UTF-8.',
+  }),
+});
+
+export type LoginBody = z.infer<typeof loginBodySchema>;

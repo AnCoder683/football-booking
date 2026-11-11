@@ -7,6 +7,18 @@ Các câu trả lời/nhật ký bên dưới giữ bằng chứng tại thời 
 
 Liên quan: FB-004–007.
 
+## Bàn giao tracing login — buổi sau
+
+- **Yêu cầu người học 2026-11-11:** buổi sau trace luồng login, tiếp đến backend/tests/auth.login.test.ts, rồi giải thích backend/src/middlewares/csrf-protection.ts. Không bắt đầu giải thích ngay trong lượt bàn giao.
+- Bắt đầu từ POST /auth/login trong backend/src/modules/auth/auth.routes.ts; mỗi lượt một dòng/điều kiện, dùng giá trị cụ thể trước–sau, hỏi đã hiểu/chỗ cần hỏi và chờ xác nhận. Không giảng trước toàn bộ luồng; không trace FE sâu trừ khi được yêu cầu.
+- Đây là kế hoạch học, chưa có bằng chứng diễn giải độc lập và không nâng trạng thái câu hỏi. Chưa có xác nhận người học đã đăng nhập thành công trên trình duyệt.
+
+## CSRF — cần giải thích lại khi người học yêu cầu
+
+- **Yêu cầu người học 2026-11-11:** đồng ý gắn bảo vệ riêng cho các đường dẫn auth và yêu cầu ghi chú để khi cần mentor giải thích lại. Chưa có diễn giải độc lập; không đánh dấu đã hiểu CSRF từ lời đồng ý.
+- Khi được hỏi lại, giải thích từng phần nhỏ: cookie tự gửi và CSRF là gì; APP_ORIGIN dùng làm gì; vì sao X-CSRF-Protection: 1 là header công khai; kiểm tra Origin/Referer; vì sao gắn riêng login/refresh/logout trong auth.routes.ts thay vì toàn app.ts. Dùng ví dụ cụ thể rồi chờ người học trước phần tiếp theo.
+- Code để đối chiếu: backend/src/config/auth-config.ts, backend/src/middlewares/csrf-protection.ts và backend/src/modules/auth/auth.routes.ts. Register tạm miễn CSRF theo quyết định hiện hành; middleware đã gắn theo đường dẫn POST, login đã mở sau khi thêm rate limit, refresh/logout chưa có handler.
+
 | Mã | Câu hỏi | Trạng thái |
 | --- | --- | --- |
 | G2-01 | Một request đặt sân đi qua những lớp nào trong ứng dụng? | Chưa học |
