@@ -35,3 +35,9 @@ Ví dụ durationMinutes=45:
 ```
 
 Người học xác nhận “Đồng ý” với đề xuất này. Chưa triển khai/test và chưa chọn thư viện validation. Không áp dụng 400 cho mọi lỗi nghiệp vụ: tranh slot vẫn là 409 theo quyết định trước.
+
+### Lỗi đọc JSON — triển khai 2026-11-10
+
+- JSON sai cú pháp: HTTP 400, error.code=INVALID_JSON, message="Nội dung JSON không hợp lệ."
+- Body vượt giới hạn express.json mặc định 100kb: HTTP 413, error.code=PAYLOAD_TOO_LARGE, message="Nội dung yêu cầu quá lớn."
+- Giữ cấu trúc success=false/error.code/error.message; không trả nội dung body gây lỗi, stack hoặc thông tin nội bộ. Chỉ map hai loại lỗi parser này; lỗi khác giữ 500/INTERNAL_ERROR.

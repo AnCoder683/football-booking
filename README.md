@@ -2,7 +2,7 @@
 
 Ứng dụng đặt sân bóng đá cho một cơ sở có nhiều sân. Mục tiêu là tự xây dựng, kiểm thử, triển khai và giải thích được một backend để đưa vào CV Backend intern.
 
-**Trạng thái:** FB-003 DONE; FB-004 TODO; FB-002 IN_REVIEW. Đã có backend/frontend local và API danh sách sân; bộ test tự động đã gỡ theo yêu cầu ngày 2026-11-06. Chưa có CI hoặc bản deploy. Trạng thái/bằng chứng và dự báo hiện hành ở [PROGRESS](docs/PROGRESS.md).
+**Trạng thái:** FB-003 DONE; FB-004 IN_PROGRESS; FB-002 IN_REVIEW. Đã có backend/frontend local, API danh sách sân và đăng ký; bộ test backend hiện có 67 test. Chưa có login, CI hoặc bản deploy. Trạng thái/bằng chứng và dự báo hiện hành ở [PROGRESS](docs/PROGRESS.md).
 
 ## Bắt đầu từ đây
 
@@ -139,6 +139,8 @@ Backend hiện chỉ giữ ba script `dev`, `test`, `check` cho phần đang h�
 
 ### Chạy frontend React/Vite
 
+Auth đang triển khai: đăng ký tạm thời không yêu cầu CSRF theo quyết định 2026-11-10; chỉ nhận JSON và không tạo phiên hoặc cookie. POST /auth/register đã được gắn vào backend với rate limit 5 request/15 phút/IP; test HTTP đăng ký trên DB test đã pass cho tạo User/hash/quyền, email trùng và request đồng thời, dữ liệu sai, lỗi JSON/body lớn và rate limit; toàn bộ backend 67/67 test pass ngày 2026-11-10. Bảo vệ login/refresh/logout sẽ review khi triển khai phiên/cookie theo thiết kế auth.
+
 Chạy trên **máy local** trong terminal riêng, từ thư mục gốc repo:
 
 ```bash
@@ -165,12 +167,16 @@ Các file chính:
 
 - `frontend/index.html`: trang HTML gốc và phần tử `root`.
 - `frontend/src/main.tsx`: gắn React vào `root`.
-- `frontend/src/App.tsx`: khung trang.
-- `frontend/src/CourtsSection.tsx`: fetch danh sách sân, trạng thái tải/lỗi/rỗng, thẻ sân và phân trang.
+- `frontend/src/App.tsx`: header/footer chung và route React Router: `/` là trang chủ, `/register` là trang đăng ký; URL không khớp hiện thông báo không tìm thấy.
+- `frontend/src/pages/HomePage.tsx`: phần giới thiệu và danh sách sân trên trang chủ.
+- `frontend/src/modules/courts/CourtsSection.tsx`: gọi Axios lấy danh sách sân, trạng thái tải/lỗi/rỗng, thẻ sân và phân trang.
+- `frontend/src/modules/auth/RegisterSection.tsx`: form họ tên/email/mật khẩu, gửi đăng ký qua `/api/auth/register`, trạng thái đang gửi/thành công/lỗi; không tự đăng nhập.
 - `frontend/src/styles.css`: màu sắc, bố cục và CSS cho màn hình nhỏ.
 - `frontend/vite.config.ts`: plugin React và cổng local.
 
 Đã chạy 2026-11-05: npm install báo 0 vulnerabilities; `npm run build` (gồm check) exit 0. Dev server sẵn sàng; HTTP trang gốc, main.tsx, App.tsx và CSS đều 200. Công cụ trình duyệt báo browser access host unavailable nên chưa xác nhận render, tương tác hoặc bố cục mobile trực quan. Chưa chạy preview.
+
+FE đăng ký (cập nhật 2026-11-11): nút Đăng ký trên header dẫn tới `/register` bằng React Router. Form dùng Axios gửi JSON qua Vite proxy tới `POST /auth/register`; danh sách sân cũng dùng Axios. Form kiểm tra mật khẩu theo cùng quy tắc ít nhất 15 Unicode code point/tối đa 72 byte UTF-8, giữ nguyên khoảng trắng; backend vẫn kiểm tra toàn bộ dữ liệu. Khi đang gửi, khóa form; thành công xóa dữ liệu form và hiển thị thông báo. Lỗi HTTP (gồm 409 email trùng, 429) lấy thông báo từ `error.response.data`; lỗi kết nối hiện thông báo chưa nhận được kết quả. Tải sân giữ AbortController để hủy request khi rời trang/đổi truy vấn ([tài liệu Axios](https://github.com/axios/axios-docs/blob/master/posts/en/cancellation.md)). Login chưa có. Có ảnh người học xác nhận đăng ký thành công và email trùng trước khi đổi Axios; sau đổi, build và self-check giả lập Axios adapter pass, ảnh người học xác nhận ca đăng ký thành công. Ca email trùng sau đổi Axios chưa có xác nhận trên trình duyệt.
 
 ### API danh sách sân và kết nối frontend
 

@@ -82,8 +82,8 @@ Token rõ chỉ xuất hiện khi tạo và trong cookie/request cần thiết; 
 - Đã duyệt 2026-11-03: POST /auth/register công khai; body chỉ name/email/password, tất cả bắt buộc và đúng kiểu string; không nhận null hoặc field thừa (kể cả role/isBookingBlocked/passwordHash).
 - name: trim, gộp khoảng trắng liên tiếp, sau chuẩn hóa dài 1–100 ký tự; tên hiển thị không unique, khách được trùng tên.
 - email: trim, chuyển chữ thường toàn bộ theo chính sách đăng nhập của app; định dạng email hợp lệ, dài tối đa 254 ký tự. Lưu giá trị chuẩn hóa và dùng cùng quy tắc khi đăng nhập/seed/kiểm tra unique database; không tự bỏ dấu chấm hoặc phần +tag. Không tự coi validation định dạng chứng minh chủ sở hữu email; xác minh email chưa thuộc phạm vi.
-- password: string dài 15–128 ký tự, cho phép khoảng trắng/Unicode, không trim/gộp khoảng trắng/chuyển hoa thường hoặc âm thầm cắt ngắn. Không ép tổ hợp chữ hoa/chữ thường/số/ký tự đặc biệt. Giới hạn độ dài tính theo Unicode code point, cần dùng thống nhất frontend/backend khi triển khai.
-- Lựa chọn 15 ký tự vì bản đầu không có MFA, tham khảo [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html): khuyến nghị tối thiểu 15 khi không MFA, cho phép ít nhất 64 ký tự và không ép thành phần mật khẩu. Trần 128 là lựa chọn của project đã duyệt; không tuyên bố tuân thủ đầy đủ mọi khuyến nghị bảo mật chỉ nhờ bộ validation này. Hash/tham số và biện pháp chống đoán mật khẩu còn chốt riêng; chưa thêm dependency/dịch vụ.
+- password — **điều chỉnh đã duyệt 2026-11-10, thay giới hạn 15–128 ký tự trước đây:** string có ít nhất 15 Unicode code point và tối đa 72 byte UTF-8 để dùng bcrypt. Cho phép khoảng trắng/Unicode, không trim/gộp khoảng trắng/chuyển hoa thường hoặc âm thầm cắt ngắn; vượt giới hạn trả 400/VALIDATION_ERROR. Không ép tổ hợp chữ hoa/chữ thường/số/ký tự đặc biệt. Frontend/backend phải dùng cùng quy tắc khi triển khai.
+- Lựa chọn 15 ký tự vì bản đầu không có MFA, tham khảo [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html). Người học chọn thư viện bcrypt và duyệt giới hạn 72 byte UTF-8 theo [tài liệu bcrypt](https://github.com/kelektiv/node.bcrypt.js#security-issues-and-concerns); giới hạn byte khiến tiếng Việt/emoji chứa được ít ký tự hơn ASCII. Không tuyên bố đáp ứng toàn bộ khuyến nghị OWASP. Đã duyệt bcrypt async với cost 12 và hash trực tiếp trong service register ngày 2026-11-10; chưa benchmark cost riêng. Biện pháp chống đoán mật khẩu còn chốt trước endpoint.
 - Thiếu/sai/thừa field: 400/VALIDATION_ERROR với details theo field/message. Backend tự gán CUSTOMER/isBookingBlocked=false như phạm vi đã chốt. Response thành công, lỗi trùng email và đăng nhập riêng sau đăng ký đã duyệt ở dưới.
 - Người học xác nhận “Ok.” cho bộ validation trên. Chưa triển khai/test; không áp validation đăng ký cho login một cách tự động.
 
@@ -93,11 +93,18 @@ Token rõ chỉ xuất hiện khi tạo và trong cookie/request cần thiết; 
 - Đã duyệt không tự đăng nhập sau đăng ký: không cấp access/refresh token hoặc đặt cookie phiên mới; giao diện chuyển sang màn hình đăng nhập. Nếu client đã có phiên, endpoint đăng ký không thay cookie/phiên hiện tại. Login/refresh giữ luồng riêng đã lên kế hoạch.
 - Email đã tồn tại sau chuẩn hóa, dù tài khoản CUSTOMER hay ADMIN: 409/EMAIL_ALREADY_EXISTS, message="Email đã được sử dụng. Vui lòng đăng nhập hoặc dùng email khác." Không tạo User thứ hai. Database phải bảo vệ unique email, map đúng xung đột email kể cả đăng ký đồng thời; không chỉ kiểm tra SELECT trước insert.
 - Body sai/thiếu/thừa: 400/VALIDATION_ERROR/details theo validation đã duyệt. Endpoint công khai không đòi access token.
-- Cần hash mật khẩu trước lưu; thuật toán/tham số/rate limit và chi tiết triển khai còn chốt trong phần auth. Người học xác nhận “Ok.” cho response/lỗi và hành vi đăng nhập riêng sau đăng ký. Chưa triển khai/test.
+- Cần hash mật khẩu trước lưu; đã chọn thư viện bcrypt ngày 2026-11-10; cost 12/async đã duyệt và hash trực tiếp trong service register; rate limit đăng ký đã chốt tại mục dưới; chi tiết endpoint còn hoàn thiện trong phần auth. Người học xác nhận “Ok.” cho response/lỗi và hành vi đăng nhập riêng sau đăng ký. Chưa triển khai endpoint.
+
+### Rate limit đăng ký — đã duyệt 2026-11-10
+
+- Dùng express-rate-limit ngay trong auth.routes.ts, trước validateBody/controller: tối đa 5 request tới POST /auth/register trong 15 phút cho mỗi IP theo cơ chế mặc định của thư viện. Đếm cả request bị validation từ chối; các endpoint khác không dùng chung limiter này.
+- Vượt giới hạn trả 429, success=false, error.code=RATE_LIMIT_EXCEEDED, message="Bạn đã gửi quá nhiều yêu cầu đăng ký. Vui lòng thử lại sau."; giữ Retry-After do thư viện cung cấp.
+- Bản đầu dùng MemoryStore mặc định cho một tiến trình local; restart làm mất bộ đếm. Nhiều người chung IP có thể bị tính chung, IPv6 dùng cách nhóm subnet mặc định của thư viện. Khi chạy nhiều instance phải review shared store/proxy; chưa mở trust proxy tùy ý.
+- Đã cài dependency, kiểm tra TypeScript pass và chạy thử HTTP một lần trên app tạm: 5 request body sai đi tới validation/400, request thứ 6 trả 429 có Retry-After; không ghi DB hoặc thêm file test. Đã gắn authRouter vào app chính tại /auth; 9 test HTTP đăng ký đã pass trên PostgreSQL test, gồm rate limit và hai request đồng thời tranh cùng email (201/409, chỉ một User).
 
 ## Đăng nhập — POST /auth/login (hợp đồng chính đã duyệt 2026-11-03)
 
-- Công khai, dùng chung CUSTOMER/ADMIN; body chỉ email/password, bắt buộc string, không null/field thừa. email chuẩn hóa/validate theo đăng ký; password giữ nguyên, không trim, không ép kiểm tra độ mạnh khi đăng nhập: đề xuất nhận 1–128 Unicode code point để so khớp, không áp tối thiểu 15 của đăng ký thành một lỗi validation ở login.
+- Công khai, dùng chung CUSTOMER/ADMIN; body chỉ email/password, bắt buộc string, không null/field thừa. email chuẩn hóa/validate theo đăng ký; password giữ nguyên, không trim, không ép kiểm tra độ mạnh khi đăng nhập. Giới hạn login còn cần chốt trước code; đề xuất 1–128 Unicode code point trước đây cần điều chỉnh theo lựa chọn bcrypt/giới hạn 72 byte đã duyệt cho đăng ký, không áp tối thiểu 15 của đăng ký thành một lỗi validation ở login.
 - Thành công 200/success=true/message="Đăng nhập thành công", data {accessToken,tokenType:"Bearer",expiresIn:900,user:{id,name,email,role,isBookingBlocked}}. Access JWT 15 phút theo phương án đã duyệt.
 - Cấp refresh token hạn 7 ngày từ lúc đăng nhập qua cookie HttpOnly, lưu hash token vào DB theo mô hình phiên đã đề xuất; không trả refresh token trong JSON, không trả password/hash. Chính sách cookie/CSRF đã duyệt ở mục riêng; nhóm phiên và trường token còn hoàn thiện, không suy ra đã xong từ response này.
 - Email không có hoặc mật khẩu không khớp cùng trả 401/INVALID_CREDENTIALS, message="Email hoặc mật khẩu không đúng." Không cấp token khi thất bại. Body sai/thiếu/thừa trả 400/VALIDATION_ERROR/details.
@@ -161,13 +168,15 @@ Người học trả lời “Ok đi tiếp phần tiếp theo” sau giải th�
 
 ## Cookie và CSRF — chính sách đã duyệt 2026-11-04
 
+**Điều chỉnh đã duyệt 2026-11-10:** người học yêu cầu tạm bỏ CSRF ở đăng ký để hoàn tất luồng cơ bản trước. POST /auth/register chỉ nhận JSON, không tạo phiên/cookie, tạm thời không bắt buộc Origin/Referer hoặc X-CSRF-Protection. Đã gỡ middleware CSRF chưa gắn route và APP_ORIGIN mẫu chưa dùng. Bảo vệ login/refresh/logout vẫn theo chính sách dưới đây và phải review trước khi triển khai phiên/cookie; quyết định này không miễn CSRF cho các endpoint đó. Bằng chứng trước khi gỡ: middleware qua kiểm tra TypeScript và assert trực tiếp một lần, chưa HTTP/browser/cookie.
+
 Người học nói chưa rành CSRF, yêu cầu đề xuất phù hợp và giải thích lý do. Yêu cầu ban đầu không tự là bằng chứng đã hiểu. Sau phần giải thích và câu hỏi xác nhận rõ cả ba lớp, người học trả lời “Ok.”; ghi duyệt chính sách bên dưới, chưa có bằng chứng triển khai hoặc giải thích độc lập.
 
 ### Giả định triển khai và phạm vi
 
 - Đề xuất frontend và API cùng origin: ví dụ minh họa https://booking.example, frontend ở /, API ở /api/* (prefix public minh họa, chưa đổi các route /auth/* trong tài liệu thành code). Caddy định tuyến API đến Express. Local dùng Vite proxy để trình duyệt gọi API qua cùng origin frontend — người học đã duyệt riêng lựa chọn này bằng “Ok dùng vite proxy”. Chưa thuê/chọn domain hoặc triển khai proxy.
 - Origin là bộ scheme/host/port. Backend cấu hình APP_ORIGIN cho từng môi trường; không suy ra giá trị tin cậy từ Host/X-Forwarded-Host tùy ý. Proxy giữ nguyên Origin/Referer của trình duyệt. Không rewrite nguồn không tin cậy thành origin của app.
-- Bảo vệ POST register/login/refresh/logout trước khi tạo/rotate/thu hồi phiên hoặc set/xóa cookie, gồm cả logout không có cookie. Các API đặt/hủy dùng Bearer vẫn kiểm tra xác thực/quyền như đã chốt; không chuyển chúng sang xác thực bằng cookie.
+- Bảo vệ POST login/refresh/logout trước khi tạo/rotate/thu hồi phiên hoặc set/xóa cookie, gồm cả logout không có cookie. Register tạm miễn theo điều chỉnh 2026-11-10 ở trên. Các API đặt/hủy dùng Bearer vẫn kiểm tra xác thực/quyền như đã chốt; không chuyển chúng sang xác thực bằng cookie.
 
 ### Cơ chế đã duyệt
 

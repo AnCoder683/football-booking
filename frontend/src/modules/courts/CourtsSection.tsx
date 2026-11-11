@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 type Court = {
   id: string;
@@ -31,10 +32,11 @@ export default function CourtsSection() {
 
     async function loadCourts() {
       try {
-        const result = await fetch(`/api/courts?page=${page}&limit=10`, { signal: controller.signal });
-        if (!result.ok) throw new Error('Request failed');
-        const response: CourtsResponse = await result.json();
-        if (response.success !== true || !Array.isArray(response.data) || !response.meta) {
+        const { data: response } = await axios.get<CourtsResponse>('/api/courts', {
+          params: { page, limit: 10 },
+          signal: controller.signal,
+        });
+        if (response?.success !== true || !Array.isArray(response.data) || !response.meta) {
           throw new Error('Unexpected response');
         }
         if (!controller.signal.aborted) setState({ status: 'success', response });

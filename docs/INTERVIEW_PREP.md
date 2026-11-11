@@ -13,7 +13,7 @@ Mức hiểu giữ nguyên theo câu trả lời thực tế; không suy ra đã
 
 - **G1-07 — ưu tiên ôn khi xin việc theo yêu cầu người học:** Prisma schema so với ràng buộc SQL, quy trình và lịch sử migration; [câu hỏi ôn gắn với Branch/Court thực tế](learning/stage-1.md#g1-07--ôn-prisma-và-sql-migration-khi-xin-việc). Cần ôn, chưa có câu trả lời độc lập.
 
-- **Điểm dừng hiện hành 2026-11-10:** đã giải thích mặc định pagination/toEqual và test.each; người học xác nhận hiểu, yêu cầu viết tiếp 5 test HTTP, đã bổ sung và chạy pass. Tiếp theo review test `GET /courts rejects invalid $field`, bắt đầu từ đầu vào và HTTP 400 mong đợi. [Bằng chứng và giới hạn mức hiểu](learning/stage-1.md#review-bài-test-get-courts-và-điểm-dừng--2026-11-09); không nâng mức hiểu từ xác nhận đã đọc/hiểu hoặc test pass. Không trace lại từng import đã hiểu.
+- **Điểm dừng hiện hành 2026-11-11:** đã có ảnh đăng ký thành công/email trùng; vừa đổi FE sang Axios theo yêu cầu, chờ kiểm tra lại trình duyệt. Không trace FE quá sâu hoặc lấy học auth.test.ts làm điều kiện tiếp tục. [Review đăng ký và concurrency](learning/stage-1.md#review-đăng-ký-và-concurrency--2026-11-11) ghi riêng lời người học và phần mentor làm rõ; chưa kết luận hiểu toàn auth. FB-004 IN_PROGRESS; bằng chứng kỹ thuật/bước tiếp theo xem PROGRESS.
 
 ## Cần hướng dẫn trực quan khi code
 
