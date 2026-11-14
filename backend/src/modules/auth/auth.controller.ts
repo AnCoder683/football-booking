@@ -1,6 +1,31 @@
 import type { Request, Response } from 'express';
 import type { LoginBody, RegisterBody } from './auth.schema.js';
-import { login, register } from './auth.service.js';
+import { getMe, login, register } from './auth.service.js';
+
+type MeLocals = { userId: string };
+
+export async function meController(_req: Request, res: Response<unknown, MeLocals>) {
+  res.set('Cache-Control', 'no-store');
+  const user = await getMe(res.locals.userId);
+
+  // A valid access token can outlive the user account deleted from the database.
+  if (user === null) {
+    res.status(401).json({
+      success: false,
+      error: {
+        code: 'UNAUTHENTICATED',
+        message: 'Vui lòng đăng nhập để tiếp tục.',
+      },
+    });
+    return;
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Lấy thông tin tài khoản thành công',
+    data: user,
+  });
+}
 
 type RegisterLocals = { body: RegisterBody };
 

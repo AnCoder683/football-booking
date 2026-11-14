@@ -119,6 +119,8 @@ Token rõ chỉ xuất hiện khi tạo và trong cookie/request cần thiết; 
 
 ## Tài khoản hiện tại — GET /auth/me (đã duyệt 2026-11-03)
 
+**Triển khai 2026-11-14:** đã gắn authenticate → meController → getMe; đọc User hiện hành, trả đúng bộ trường, Cache-Control: no-store và 401 nếu user không còn tồn tại. Test /me 6/6, middleware 11/11; toàn backend 108/108 và TypeScript pass. FE gọi /me sau login bằng Bearer trong effect theo accessToken; cập nhật user, 401 yêu cầu login lại (chưa refresh), lỗi mạng giữ phiên, cleanup bỏ response cũ. FE build và 6 self-check giả lập pass; chưa demo browser. Ghi chú chưa triển khai ở cuối mục là trạng thái tại thời điểm duyệt hợp đồng.
+
 - CUSTOMER/ADMIN có access token hợp lệ gọi bằng Authorization: Bearer <accessToken>; không nhận userId từ body/query để chọn tài khoản khác.
 - Backend lấy userId từ JWT đã xác thực rồi đọc User hiện hành trong database; 200/success=true/message="Lấy thông tin tài khoản thành công", data {id,name,email,role,isBookingBlocked}, không trả passwordHash/token/lý do chặn/lịch sử.
 - isBookingBlocked phản ánh lúc đọc database, giúp UI cập nhật trạng thái; khách bị chặn vẫn được gọi API này. Trạng thái có thể đổi sau response; API tạo booking luôn kiểm tra hiện hành độc lập.

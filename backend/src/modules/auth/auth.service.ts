@@ -6,6 +6,19 @@ import { prisma } from '../../lib/prisma.js';
 import { getJwtAccessSecret } from '../../config/auth-config.js';
 import type { LoginBody, RegisterBody } from './auth.schema.js';
 
+export async function getMe(userId: string) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      isBookingBlocked: true,
+    },
+  });
+}
+
 export async function register(body: RegisterBody) {
   const passwordHash = await bcrypt.hash(body.password, 12);
   try {

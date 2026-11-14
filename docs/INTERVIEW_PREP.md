@@ -13,13 +13,13 @@ Mức hiểu giữ nguyên theo câu trả lời thực tế; không suy ra đã
 
 - **G1-07 — ưu tiên ôn khi xin việc theo yêu cầu người học:** Prisma schema so với ràng buộc SQL, quy trình và lịch sử migration; [câu hỏi ôn gắn với Branch/Court thực tế](learning/stage-1.md#g1-07--ôn-prisma-và-sql-migration-khi-xin-việc). Cần ôn, chưa có câu trả lời độc lập.
 
-- **Điểm dừng hiện hành 2026-11-11:** FB-004 IN_PROGRESS; POST login đã có CSRF/rate limit/schema/service/JWT/phiên hash/cookie; 7 test login HTTP/PostgreSQL test và toàn bộ 87/87 backend test pass. FE login đã có code/build/self-check giả lập; chờ người học kiểm tra browser. Chưa handler me/refresh/logout. Bằng chứng kỹ thuật/bước tiếp theo tại PROGRESS. Không trace FE sâu/test vụn hoặc lấy học auth.test.ts làm điều kiện tiếp tục. [Review đăng ký và concurrency](learning/stage-1.md#review-đăng-ký-và-concurrency--2026-11-11) giữ riêng lời người học; không nâng mức hiểu từ xác nhận đã review/đã hiểu.
+- **Điểm dừng hiện hành 2026-11-14:** FB-004 IN_PROGRESS; GET /auth/me và FE gọi bằng Bearer đã có, backend 108/108 test và FE build/self-check pass; chưa demo browser /me hoặc có refresh/logout/RBAC. Bước tiếp theo và bằng chứng kỹ thuật tại [PROGRESS](PROGRESS.md); review hiểu tại [stage-2](learning/stage-2.md#bàn-giao-tracing-login--buổi-sau). Không nâng mức hiểu toàn bộ auth từ lời đồng ý.
 
 ## Cần hướng dẫn trực quan khi code
 
-- **Buổi sau — tracing login theo yêu cầu 2026-11-11:** lần lượt luồng login → auth.login.test.ts → csrf-protection.ts, mỗi lượt một đoạn nhỏ rồi chờ; [điểm bắt đầu và giới hạn](learning/stage-2.md#bàn-giao-tracing-login--buổi-sau). Không bắt đầu tính năng mới trước phần review này.
+- **Buổi sau — cập nhật 2026-11-14:** kiểm tra GET /api/auth/me trong Network sau login (200 và header Bearer, không gửi giá trị token); [bàn giao](learning/stage-2.md#bàn-giao-tracing-login--buổi-sau). Cookie/SameSite tạm gác theo yêu cầu; chưa trace effect mới. TanStack Query/interceptor mới trao đổi vai trò, chưa cài hoặc triển khai; làm endpoint refresh trước khi nối auto refresh.
 
-- **CSRF — giải thích lại khi người học cần:** đã đồng ý gắn middleware riêng cho auth, chưa chứng minh hiểu; xem [yêu cầu và nội dung cần ôn](learning/stage-2.md#csrf--cần-giải-thích-lại-khi-người-học-yêu-cầu).
+- **CSRF/CORS — nội dung cần ôn:** đã có review độc lập một số nhánh CSRF và phân biệt GET Accept/POST JSON về preflight, vai trò BE/trình duyệt; chưa demo browser. Xem [bằng chứng và yêu cầu trực quan](learning/stage-2.md#csrf--cần-giải-thích-lại-khi-người-học-yêu-cầu).
 
 - **Mỗi khi gặp khóa:** dừng lại, đi chậm, trace từng request giữ/chờ/đọc lại/nhả khóa; chờ người học trước khi thêm tình huống. Áp dụng cho khóa DB và phối hợp frontend; xem [yêu cầu và bằng chứng](learning/stage-3.md#nhu-cầu-đi-chậm-khi-gặp-khóa--2026-11-04). Không nâng mức hiểu từ xác nhận đã hình dung.
 

@@ -38,9 +38,8 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-test.each(['CUSTOMER', 'ADMIN'] as const)('login issues JWT and a hashed refresh session for %s', async role => {
+test.each(['CUSTOMER', 'ADMIN'] as const)('login returns the correct user for %s', async role => {
   await prisma.user.update({ where: { id: userId }, data: { role } });
-  const before = Date.now();
   const response = await request(app).post('/auth/login').set(headers)
     .send({ email: `  ${email.toUpperCase()}  `, password });
   expect(response.status).toBe(200);
@@ -53,12 +52,26 @@ test.each(['CUSTOMER', 'ADMIN'] as const)('login issues JWT and a hashed refresh
     },
   });
   expect(response.headers['cache-control']).toBe('no-store');
+});
+
+test.each(['CUSTOMER', 'ADMIN'] as const)('login issues a valid access JWT for %s', async role => {
+  await prisma.user.update({ where: { id: userId }, data: { role } });
+
+  const response = await request(app).post('/auth/login').set(headers)
+    .send({ email, password });
+  expect(response.status).toBe(200);
+
   const payload = jwt.verify(response.body.data.accessToken, getJwtAccessSecret(), { algorithms: ['HS256'] });
-  expect(typeof payload).toBe('object');
   if (typeof payload === 'string') throw new Error('Expected JWT object payload');
   expect(payload.sub).toBe(userId);
   expect(payload.role).toBe(role);
   expect(payload.exp! - payload.iat!).toBe(900);
+});
+
+test('login sets a refresh cookie with the required attributes', async () => {
+  const response = await request(app).post('/auth/login').set(headers)
+    .send({ email, password });
+  expect(response.status).toBe(200);
 
   const cookie = response.headers['set-cookie'][0] as string;
   expect(cookie).toContain('HttpOnly');
@@ -66,18 +79,35 @@ test.each(['CUSTOMER', 'ADMIN'] as const)('login issues JWT and a hashed refresh
   expect(cookie).toContain('Path=/');
   expect(cookie).not.toContain('Domain=');
   expect(cookie).not.toContain('Secure');
+
   const token = cookie.split(';')[0].slice('refreshToken='.length);
   expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
   expect(Buffer.from(token, 'base64url')).toHaveLength(32);
+});
+
+test('login saves one hashed refresh session that expires in seven days', async () => {
+  const before = Date.now();
+  const response = await request(app).post('/auth/login').set(headers)
+    .send({ email, password });
+  const after = Date.now();
+  expect(response.status).toBe(200);
+
+  const cookie = response.headers['set-cookie'][0] as string;
+  const token = cookie.split(';')[0].slice('refreshToken='.length);
+  const expectedHash = createHash('sha256').update(token).digest('hex');
+
   const sessions = await prisma.refreshToken.findMany({ where: { userId } });
   expect(sessions).toHaveLength(1);
   const session = sessions[0]!;
-  expect(session.tokenHash).toBe(createHash('sha256').update(token).digest('hex'));
+  expect(session.tokenHash).toBe(expectedHash);
   expect(session.familyId).toMatch(/^[0-9a-f-]{36}$/);
   expect(session.usedAt).toBeNull();
   expect(session.revokedAt).toBeNull();
-  expect(session.expiresAt.getTime()).toBeGreaterThanOrEqual(before + 7 * 24 * 60 * 60 * 1000);
-  expect(session.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  const sevenDays = 7 * 24 * 60 * 60 * 1000;
+  const expiresAt = session.expiresAt.getTime();
+  expect(expiresAt).toBeGreaterThanOrEqual(before + sevenDays);
+  expect(expiresAt).toBeLessThanOrEqual(after + sevenDays);
   expect(cookie).toContain(`Expires=${session.expiresAt.toUTCString()}`);
 });
 
