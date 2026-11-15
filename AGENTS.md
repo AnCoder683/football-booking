@@ -25,6 +25,15 @@ Project chỉ phát triển ở mức Backend intern: ưu tiên giải pháp đ�
 - Không đổi stack, thêm dependency hoặc mở rộng kiến trúc khi chưa giải thích nhu cầu. Giữ giải pháp phù hợp app nhỏ.
 - Cuối giai đoạn chọn 3–5 câu hỏi liên quan để review. Người học trả lời trước; nhận xét theo đúng/thiếu/cần sửa và gắn với code thực tế. Không hỏi sâu phần chưa học như điều kiện để bắt đầu.
 
+## Nhịp viết và học test cho intern
+
+- Mặc định hoàn thiện một luồng nhỏ route → controller → service, gọi API thủ công để quan sát request/response và DB trước–sau, rồi viết test HTTP cho luồng đó. Không chờ xong cả ticket mới test, cũng không mặc định viết một bộ test service lớn trước khi người học nhìn được toàn luồng. Nếu chưa gọi API thủ công thì báo rõ, không coi test tự động là bằng chứng đã demo.
+- Ưu tiên test HTTP bằng Supertest trên app và PostgreSQL test thật, theo cách trong `backend/tests/auth.login.test.ts`. Không bắt buộc tách file test cho từng layer; chỉ thêm test service khi có hành vi cần kiểm chứng riêng, tránh lặp cùng kiểm tra ở nhiều layer.
+- Bắt đầu bằng một test thành công, rồi thêm lỗi đầu vào/xác thực cơ bản phù hợp endpoint. Mỗi test có ba đoạn dễ đọc: chuẩn bị dữ liệu → gọi API → kiểm tra; mỗi test tập trung một hành vi, có thể gọi lại cùng API để tách kiểm tra response/JWT/cookie/DB cho dễ đọc. Dùng tên biến cụ thể; không mặc định thêm helper, mock hoặc fixture phức tạp.
+- Giữ kiểm tra môi trường và đúng tên database test trước khi ghi dữ liệu; dùng dữ liệu riêng như email UUID, dọn đúng dữ liệu của test. Có thể dùng beforeEach/afterEach cho chuẩn bị và dọn dữ liệu lặp lại theo mẫu hiện có; không reset DB hoặc dùng dữ liệu tài khoản thật.
+- Bổ sung test quyền, thời gian, reuse, đồng thời và rollback khi triển khai/giải thích tới nhánh tương ứng. Các kiểm tra bảo mật/an toàn dữ liệu cần thiết vẫn phải được thực hiện trước khi coi chức năng đã kiểm chứng; agent có thể viết test service sớm để kiểm chứng phần rủi ro nhưng phải nói rõ phạm vi, chưa thay cho test HTTP hoặc demo toàn luồng.
+- Khi hướng dẫn, cùng đọc/viết một test HTTP đơn giản trước rồi mới tăng độ khó. Phân biệt test agent đã chạy để kiểm chứng code với test người học đã tự hiểu/viết được; không yêu cầu người học nắm cả bộ test nâng cao ngay hoặc dùng điều đó chặn task độc lập.
+
 ## Chất lượng và bằng chứng
 
 - Giữ phạm vi và quy tắc nghiệp vụ trong README. Khi yêu cầu đổi, cập nhật tài liệu liên quan, không âm thầm thay quy tắc.

@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import type { LoginBody, RegisterBody } from './auth.schema.js';
-import { getMe, login, register } from './auth.service.js';
+import { getMe, login, refresh, register } from './auth.service.js';
 
 type MeLocals = { userId: string };
 
@@ -80,5 +80,57 @@ export async function loginController(_req: Request, res: Response<unknown, Logi
     success: true,
     message: 'Đăng nhập thành công',
     data,
+  });
+}
+
+export async function refreshController(req: Request, res: Response) {
+  res.set('Cache-Control', 'no-store');
+
+  // Token do backend cấp là base64url, không chứa ký tự cần giải mã URL trong cookie.
+  const refreshToken = req.get('Cookie')?.split(';')
+    .map(cookie => cookie.trim())
+    .find(cookie => cookie.startsWith('refreshToken='))
+    ?.slice('refreshToken='.length);
+  const result = await refresh(refreshToken);
+
+  if (result.status === 'UNAUTHENTICATED') {
+    res.status(401).json({
+      success: false,
+      error: {
+        code: 'UNAUTHENTICATED',
+        message: 'Không thể gia hạn phiên. Vui lòng đăng nhập lại.',
+      },
+    });
+    return;
+  }
+
+  if (result.status === 'REFRESH_TOKEN_EXPIRED') {
+    res.status(401).json({
+      success: false,
+      error: {
+        code: 'REFRESH_TOKEN_EXPIRED',
+        message: 'Refresh token đã hết hạn. Vui lòng đăng nhập lại.',
+      },
+    });
+    return;
+  }
+
+  // Service chỉ trả thành công sau commit; refresh token chỉ gửi qua cookie, không đưa vào JSON.
+  res.cookie('refreshToken', result.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    expires: result.refreshTokenExpiresAt,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: 'Gia hạn phiên thành công',
+    data: {
+      accessToken: result.accessToken,
+      tokenType: result.tokenType,
+      expiresIn: result.expiresIn,
+    },
   });
 }

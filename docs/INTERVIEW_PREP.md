@@ -13,11 +13,11 @@ Mức hiểu giữ nguyên theo câu trả lời thực tế; không suy ra đã
 
 - **G1-07 — ưu tiên ôn khi xin việc theo yêu cầu người học:** Prisma schema so với ràng buộc SQL, quy trình và lịch sử migration; [câu hỏi ôn gắn với Branch/Court thực tế](learning/stage-1.md#g1-07--ôn-prisma-và-sql-migration-khi-xin-việc). Cần ôn, chưa có câu trả lời độc lập.
 
-- **Điểm dừng hiện hành 2026-11-14:** FB-004 IN_PROGRESS; GET /auth/me và FE gọi bằng Bearer đã có, backend 108/108 test và FE build/self-check pass; chưa demo browser /me hoặc có refresh/logout/RBAC. Bước tiếp theo và bằng chứng kỹ thuật tại [PROGRESS](PROGRESS.md); review hiểu tại [stage-2](learning/stage-2.md#bàn-giao-tracing-login--buổi-sau). Không nâng mức hiểu toàn bộ auth từ lời đồng ý.
+- **Điểm dừng hiện hành 2026-11-15:** FB-004 IN_PROGRESS; BE refresh đã có route/controller/service, demo HTTP login → refresh → /me thành công trên PostgreSQL test riêng, dữ liệu demo đã dọn; chưa browser/FE refresh/logout/RBAC. Đã có file test HTTP refresh 13/13 pass, toàn backend 121/121 pass; phần test đồng thời/rollback chưa coi là người học đã nắm vững và đang tạm gác review nâng cao. Bằng chứng kỹ thuật tại [PROGRESS](PROGRESS.md); review hiểu tại [stage-2](learning/stage-2.md#bàn-giao-tracing-login--buổi-sau). Không nâng mức hiểu toàn bộ auth từ lời đồng ý hoặc demo chạy.
 
 ## Cần hướng dẫn trực quan khi code
 
-- **Buổi sau — cập nhật 2026-11-14:** kiểm tra GET /api/auth/me trong Network sau login (200 và header Bearer, không gửi giá trị token); [bàn giao](learning/stage-2.md#bàn-giao-tracing-login--buổi-sau). Cookie/SameSite tạm gác theo yêu cầu; chưa trace effect mới. TanStack Query/interceptor mới trao đổi vai trò, chưa cài hoặc triển khai; làm endpoint refresh trước khi nối auto refresh.
+- **Buổi sau — cập nhật 2026-11-15:** đọc/chốt hợp đồng logout liên quan trước khi code. Đã review test refresh cơ bản; không cần thuộc từng dòng hoặc hiểu kỹ test nâng cao mới được tiếp tục. Quy tắc nhịp học test đã ghi AGENTS.md. [Bàn giao](learning/stage-2.md#bàn-giao-tracing-login--buổi-sau). Demo Network /me trên browser vẫn còn thiếu; cookie/SameSite tạm gác. TanStack Query/interceptor chưa cài hoặc triển khai.
 
 - **CSRF/CORS — nội dung cần ôn:** đã có review độc lập một số nhánh CSRF và phân biệt GET Accept/POST JSON về preflight, vai trò BE/trình duyệt; chưa demo browser. Xem [bằng chứng và yêu cầu trực quan](learning/stage-2.md#csrf--cần-giải-thích-lại-khi-người-học-yêu-cầu).
 

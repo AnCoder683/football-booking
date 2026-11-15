@@ -22,3 +22,5 @@ export const loginBodySchema = z.strictObject({
 });
 
 export type LoginBody = z.infer<typeof loginBodySchema>;
+
+export const refreshBodySchema = z.strictObject({}).optional();
