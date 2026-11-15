@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import type { LoginBody, RegisterBody } from './auth.schema.js';
-import { getMe, login, refresh, register } from './auth.service.js';
+import { getMe, login, logout, refresh, register } from './auth.service.js';
 
 type MeLocals = { userId: string };
 
@@ -133,4 +133,23 @@ export async function refreshController(req: Request, res: Response) {
       expiresIn: result.expiresIn,
     },
   });
+}
+
+export async function logoutController(req: Request, res: Response) {
+  res.set('Cache-Control', 'no-store');
+
+  const refreshToken = req.get('Cookie')?.split(';')
+    .map(cookie => cookie.trim())
+    .find(cookie => cookie.startsWith('refreshToken='))
+    ?.slice('refreshToken='.length);
+  await logout(refreshToken);
+
+  // Chỉ xóa cookie sau khi service thành công; phạm vi phải khớp cookie lúc login/refresh.
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  });
+  res.status(204).end();
 }

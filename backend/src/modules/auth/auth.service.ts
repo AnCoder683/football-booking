@@ -186,3 +186,34 @@ export async function refresh(refreshToken: string | undefined) {
     };
   }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 }
+
+export async function logout(refreshToken: string | undefined) {
+  if (!refreshToken) return;
+
+  const tokenHash = createHash('sha256').update(refreshToken).digest('hex');
+  const token = await prisma.refreshToken.findUnique({
+    where: { tokenHash },
+    select: { userId: true },
+  });
+  if (!token) return;
+
+  await prisma.$transaction(async tx => {
+    // Dùng cùng khóa User với refresh để không bỏ sót token mới vừa được rotate.
+    const users = await tx.$queryRaw<{ id: string }[]>`
+      SELECT "id" FROM "User" WHERE "id" = ${token.userId}::uuid FOR UPDATE
+    `;
+    if (!users[0]) return;
+
+    const currentToken = await tx.refreshToken.findUnique({
+      where: { tokenHash, userId: token.userId },
+      select: { familyId: true },
+    });
+    if (!currentToken) return;
+
+    // Token đã dùng/hết hạn vẫn xác định được nhóm cần thu hồi; giữ revokedAt cũ khi gọi lại.
+    await tx.refreshToken.updateMany({
+      where: { userId: token.userId, familyId: currentToken.familyId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+}
