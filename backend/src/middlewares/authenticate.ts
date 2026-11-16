@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { getJwtAccessSecret } from '../config/auth-config.js';
 
-export function authenticate(req: Request, res: Response<unknown, { userId: string }>, next: NextFunction) {
+export function authenticate(req: Request, res: Response<unknown, { userId: string; role: 'CUSTOMER' | 'ADMIN' }>, next: NextFunction) {
   const secret = getJwtAccessSecret();
   const authorization = req.get('Authorization') ?? '';
   const [scheme, token, extra] = authorization.split(' ');
@@ -14,11 +14,13 @@ export function authenticate(req: Request, res: Response<unknown, { userId: stri
 
     const payload = jwt.verify(token, secret, { algorithms: ['HS256'] });
     if (typeof payload === 'string' || typeof payload.sub !== 'string' ||
-        !payload.sub || typeof payload.exp !== 'number') {
+        !payload.sub || typeof payload.exp !== 'number' ||
+        (payload.role !== 'CUSTOMER' && payload.role !== 'ADMIN')) {
       throw new jwt.JsonWebTokenError('Invalid access token payload');
     }
 
     res.locals.userId = payload.sub;
+    res.locals.role = payload.role;
   } catch (error) {
     if (!(error instanceof jwt.JsonWebTokenError)) throw error;
 

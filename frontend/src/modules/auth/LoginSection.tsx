@@ -1,27 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import axios from 'axios';
+import { useAuth } from './useAuth';
+import type { LoginResponse } from './auth.api';
 
-export type LoginData = {
-  accessToken: string;
-  tokenType: 'Bearer';
-  expiresIn: number;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: 'CUSTOMER' | 'ADMIN';
-    isBookingBlocked: boolean;
-  };
-};
-
-type LoginResponse = {
-  success: boolean;
-  data?: LoginData;
-  error?: { message: string; details?: { field: string; message: string }[] };
-};
-
-export default function LoginSection({ onLogin }: { onLogin: (data: LoginData) => void }) {
+export default function LoginSection() {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -43,24 +27,16 @@ export default function LoginSection({ onLogin }: { onLogin: (data: LoginData) =
 
     setIsSubmitting(true);
     try {
-      const { data: body } = await axios.post<LoginResponse>('/api/auth/login', {
-        email, password,
-      }, { headers: { 'X-CSRF-Protection': '1' } });
-
-      if (body?.success !== true || !body.data) {
-        setError(body?.error?.details?.map(issue => issue.message).join(' ')
-          || body?.error?.message || 'Không thể đăng nhập lúc này. Vui lòng thử lại sau.');
-        return;
-      }
-
+      await login({ email, password });
       form.reset();
-      onLogin(body.data);
       navigate('/');
     } catch (error) {
       if (axios.isAxiosError<LoginResponse>(error) && error.response) {
         const body = error.response.data;
         setError(body?.error?.details?.map(issue => issue.message).join(' ')
           || body?.error?.message || 'Không thể đăng nhập lúc này. Vui lòng thử lại sau.');
+      } else if (error instanceof Error && !axios.isAxiosError(error)) {
+        setError(error.message);
       } else {
         setError('Chưa nhận được kết quả đăng nhập. Vui lòng kiểm tra kết nối trước khi thử lại.');
       }

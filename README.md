@@ -2,7 +2,9 @@
 
 Ứng dụng đặt sân bóng đá cho một cơ sở có nhiều sân. Mục tiêu là tự xây dựng, kiểm thử, triển khai và giải thích được một backend để đưa vào CV Backend intern.
 
-**Trạng thái:** FB-003 DONE; FB-004 IN_PROGRESS; FB-002 IN_REVIEW. Đã có backend/frontend local, API danh sách sân và đăng ký; bộ test backend hiện có 67 test. Chưa có login, CI hoặc bản deploy. Trạng thái/bằng chứng và dự báo hiện hành ở [PROGRESS](docs/PROGRESS.md).
+**Trạng thái:** FB-003 DONE; FB-004 DONE theo phạm vi Backend intern được người học chốt ngày 2026-11-16; FB-002 IN_REVIEW. Đã có backend/frontend local, API sân, auth và phân quyền; lần chạy toàn backend gần nhất 129/129 test pass. Chưa CI hoặc deploy. Bước tiếp theo là FB-005. Bằng chứng tại [PROGRESS](docs/PROGRESS.md).
+
+**Giới hạn auth chưa kiểm chứng:** browser mất mạng/timeout/đóng tab giữa request, response hoặc Set-Cookie về muộn/đảo thứ tự và các tổ hợp lỗi nhiều tab. Hai demo F5/logout hai tab do người học xác nhận hành vi UI, chưa có Network. Browser thiếu Web Locks hiện bị dừng thao tác auth, chưa có fallback. Các mục này được hoãn khỏi điều kiện hoàn thành FB-004 của bản học tập; không khẳng định auth ổn định trong mọi tình huống. Middleware authorize sẽ được gắn vào API admin nghiệp vụ khi triển khai ticket tương ứng.
 
 ## Bắt đầu từ đây
 
@@ -183,6 +185,8 @@ FE login (cập nhật 2026-11-11): mở <http://127.0.0.1:5173/login>, dùng t�
 
 FE auth (cập nhật 2026-11-15): đã gọi `/api/auth/me` bằng Bearer sau login và có nút Đăng xuất trên header. Logout gửi POST `/api/auth/logout` với header CSRF; 204 xóa session React, backend thu hồi nhóm refresh và gửi cookie hết hạn. Khi lỗi mạng/5xx, frontend dọn access token local, báo chưa xác nhận đăng xuất trên server và cho thử lại thủ công; 403 giữ session và báo lỗi. Trong tab, phải hoàn tất logout trước khi đổi tài khoản; chưa auto refresh/khôi phục session sau reload hoặc phối hợp nhiều tab. Build và self-check FE giả lập pass; ảnh người học ngày 2026-11-15 xác nhận logout trên trình duyệt trả 204, UI về Đăng nhập/Đăng ký và bảng Cookies trống. Chưa demo lỗi hoặc phối hợp nhiều tab.
 
+FE auth (cập nhật 2026-11-16): đã thêm tự refresh khi `/me` trả 401 và khôi phục phiên sau F5. Khi tải trang, app gửi refresh bằng cookie HttpOnly, dùng access token mới gọi `/me`, rồi lưu session trong RAM. Có trạng thái đang khôi phục để chặn login/logout chồng request; refresh 401 về chưa đăng nhập, lỗi mạng chưa rõ kết quả yêu cầu thử đăng xuất lại. Các tab dùng Web Locks để gửi thao tác auth lần lượt. Build và self-check giả lập pass; chưa demo F5 hoặc nhiều tab bằng browser thật. Bằng chứng và giới hạn tại [PROGRESS](docs/PROGRESS.md).
+
 ### API danh sách sân và kết nối frontend
 
 Backend có `GET /courts` công khai theo [hợp đồng đã duyệt](docs/design/api-courts.md#api-danh-sách-sân--get-courts-đã-duyệt-2026-11-03). Chỉ trả sân hoạt động; lọc `branchId`/`playersPerTeam` kết hợp AND; mặc định page=1/limit=10, tối đa limit=50; sắp xếp name/id tăng dần. Query sai trả 400/VALIDATION_ERROR/details; không khớp hoặc trang vượt phạm vi trả 200/data rỗng. HTTP 500 dùng JSON INTERNAL_ERROR chung, không trả SQL/stack/secret.
@@ -238,6 +242,20 @@ Seed dùng UUID cố định và `upsert` theo ID với `update: {}`: thêm bả
 
 Đã kiểm chứng 2026-11-05: check/build pass; chạy seed hai lần exit 0; psql xác nhận 1 Branch, 3 Court, 0 User. Chưa kiểm tra rollback lỗi seed hoặc tạo tài khoản demo.
 
+
+### Seed tài khoản ADMIN
+
+Script riêng: [`backend/src/scripts/seed-admin.ts`](backend/src/scripts/seed-admin.ts), không chạy cùng seed sân mẫu. Điền `ADMIN_EMAIL` và `ADMIN_PASSWORD` trong `.env` gốc trên máy local theo `.env.example`; không gửi hoặc commit giá trị thật. Email chuẩn hóa như đăng ký; mật khẩu ít nhất 15 ký tự và tối đa 72 byte UTF-8, không trim. Tên tài khoản tạo mới là `Admin`.
+
+Chạy trên **máy local**, từ thư mục gốc repo khi DB đã chạy, migrate và generate Prisma Client:
+
+```bash
+npm --prefix backend run seed:admin
+```
+
+Lệnh tạo ADMIN trong DB local theo cấu hình, lưu bcrypt hash với cost 12. Mong đợi `Seed ADMIN OK` và exit 0; chạy lại với email ADMIN đã có giữ nguyên mọi thông tin, kể cả mật khẩu. Thiếu/sai cấu hình, email thuộc CUSTOMER hoặc lỗi DB thì exit 1; script không nâng quyền, reset mật khẩu hoặc xóa dữ liệu. Nếu gặp lỗi, kiểm tra cấu hình/migration/kết nối local; không gửi `.env` hoặc mật khẩu trong log. API register công khai vẫn chỉ tạo CUSTOMER.
+
+Đã kiểm tra script thật bằng subprocess trên `football_booking_test`: tạo/hash/chạy lại giữ nguyên, từ chối CUSTOMER trùng email, thiếu mật khẩu không tạo User; 3/3 test pass, dữ liệu UUID riêng đã được dọn. Chưa tạo ADMIN trong DB local hoặc demo đăng nhập bằng tài khoản seed.
 
 ## Khi nào đủ để đưa vào CV?
 

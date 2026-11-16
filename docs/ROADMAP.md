@@ -75,7 +75,9 @@ Chốt ngày 2026-11-03: thiết kế transaction đọc giá Court dưới khó
 - **Bàn giao:** module auth và luồng đăng nhập React tối giản.
 - **Nhận bàn giao từ FB-002 (2026-11-04):** chốt qua demo rồi mới code nhánh tương ứng: thứ tự kiểm tra token/nhóm/expiry/reuse và thu hồi dưới khóa User; cookie từng nhánh lỗi; login lại khi có phiên/request cũ; logout đa tab, trạng thái qua reload, response cũ/Set-Cookie và fallback khi thiếu Web Locks; hash mật khẩu/rate limit và giữ/dọn hash token cũ. Giữ các chính sách đã duyệt; không coi demo luồng thành công là đã giải quyết các nhánh này.
 - **Nghiệm thu/kiểm tra:** mật khẩu không lưu dạng rõ; đăng ký không tự cấp admin; sai mật khẩu/token thiếu, hỏng hoặc hết hạn bị từ chối; API admin chặn khách; refresh hợp lệ cấp token mới, token sai/hết hạn/thu hồi bị từ chối, rotation/reuse và request đồng thời theo DESIGN đã chốt; logout không refresh lại được, xác minh giới hạn hiệu lực access token sau logout; cookie/CSRF và retry/nhiều tab có kiểm tra thực tế.
-- **Review:** G2-02 đến G2-04.
+- **Review:** G2-02–03 theo code auth; G2-04 về ownership booking học khi triển khai FB-006, không chặn nghiệm thu FB-004.
+
+**Chốt phạm vi 2026-11-16 theo yêu cầu người học:** FB-004 DONE ở mức Backend intern, dựa trên code/test BE và demo browser cơ bản; mức hiểu theo dõi riêng. Hoãn khỏi tiêu chí nghiệm thu bản học tập: kiểm chứng browser mất mạng/timeout/đóng tab giữa request, response/Set-Cookie muộn hoặc đảo thứ tự và tổ hợp lỗi với F5/nhiều tab. Browser thiếu Web Locks hiện bị từ chối thao tác, chưa có fallback. Không bỏ bảo vệ backend rotation/reuse/transaction/CSRF/RBAC; không coi các tình huống được hoãn là đã pass. Authorize được test trên route riêng, sẽ gắn API admin nghiệp vụ khi triển khai chúng. Bằng chứng và giới hạn hiện hành tại PROGRESS.
 
 ### FB-005 — Sân và giờ trống
 

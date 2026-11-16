@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import axios from 'axios';
+import { api } from '../../lib/api';
 import { Link } from 'react-router';
 
 type RegisterResponse = {
@@ -32,7 +33,7 @@ export default function RegisterSection() {
 
     setIsSubmitting(true);
     try {
-      const { data: body } = await axios.post<RegisterResponse>('/api/auth/register', {
+      const { data: body } = await api.post<RegisterResponse>('/auth/register', {
         name, email, password,
       });
 

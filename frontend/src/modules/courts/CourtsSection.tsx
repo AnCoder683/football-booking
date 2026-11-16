@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { api } from '../../lib/api';
 
 type Court = {
   id: string;
@@ -32,7 +32,7 @@ export default function CourtsSection() {
 
     async function loadCourts() {
       try {
-        const { data: response } = await axios.get<CourtsResponse>('/api/courts', {
+        const { data: response } = await api.get<CourtsResponse>('/courts', {
           params: { page, limit: 10 },
           signal: controller.signal,
         });
