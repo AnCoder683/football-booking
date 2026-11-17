@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
+import CourtAvailability from './CourtAvailability';
 
 type Court = {
   id: string;
@@ -22,9 +23,32 @@ type LoadState =
 const money = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
 export default function CourtsSection() {
+  const [branchId, setBranchId] = useState('');
+  const [branches, setBranches] = useState<Court['branch'][]>([]);
+  const [branchesStatus, setBranchesStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [branchAttempt, setBranchAttempt] = useState(0);
+  const [courtId, setCourtId] = useState('');
   const [page, setPage] = useState(1);
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<LoadState>({ status: 'loading' });
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setBranchesStatus('loading');
+    async function loadBranches() {
+      try {
+        const { data } = await api.get<{ data: Court['branch'][] }>('/branches', { signal: controller.signal });
+        if (!controller.signal.aborted) {
+          setBranches(data.data);
+          setBranchesStatus('success');
+        }
+      } catch {
+        if (!controller.signal.aborted) setBranchesStatus('error');
+      }
+    }
+    void loadBranches();
+    return () => controller.abort();
+  }, [branchAttempt]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -33,7 +57,7 @@ export default function CourtsSection() {
     async function loadCourts() {
       try {
         const { data: response } = await api.get<CourtsResponse>('/courts', {
-          params: { page, limit: 10 },
+          params: { page, limit: 10, branchId: branchId || undefined },
           signal: controller.signal,
         });
         if (response?.success !== true || !Array.isArray(response.data) || !response.meta) {
@@ -47,7 +71,7 @@ export default function CourtsSection() {
 
     void loadCourts();
     return () => controller.abort();
-  }, [page, attempt]);
+  }, [page, attempt, branchId]);
 
   return (
     <section id="courts" className="courts-section" aria-labelledby="courts-title">
@@ -59,6 +83,22 @@ export default function CourtsSection() {
         <span className="section-number">
           {state.status === 'success' ? `${state.response.meta.total} SÂN ĐANG HOẠT ĐỘNG` : 'DANH SÁCH SÂN'}
         </span>
+      </div>
+
+      <div className="court-filters">
+        <label htmlFor="branch-filter">Chi nhánh / địa điểm
+          <select id="branch-filter" value={branchId} disabled={branchesStatus !== 'success'} onChange={(event) => {
+            setBranchId(event.target.value);
+            setPage(1);
+            setCourtId('');
+            setState({ status: 'loading' });
+          }}>
+            <option value="">Tất cả chi nhánh</option>
+            {branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name} — {branch.address}</option>)}
+          </select>
+        </label>
+        {branchesStatus === 'loading' && <p role="status">Đang tải chi nhánh…</p>}
+        {branchesStatus === 'error' && <div role="alert">Chưa tải được chi nhánh. <button className="retry-button" onClick={() => setBranchAttempt((value) => value + 1)}>Tải lại chi nhánh</button></div>}
       </div>
 
       <div aria-busy={state.status === 'loading'}>
@@ -95,6 +135,7 @@ export default function CourtsSection() {
                     <div className="court-price">
                       <strong>{money.format(court.pricePerSlot)}</strong><span> / 30 phút</span>
                     </div>
+                    <button className="court-select" aria-pressed={courtId === court.id} onClick={() => setCourtId(court.id)}>Xem giờ trống — {court.name}</button>
                   </article>
                 ))}
               </div>
@@ -110,6 +151,7 @@ export default function CourtsSection() {
           </>
         )}
       </div>
+      {courtId && <CourtAvailability key={courtId} courtId={courtId} />}
     </section>
   );
 }

@@ -4,7 +4,9 @@ Mức hiểu giữ nguyên theo câu trả lời thực tế; không suy ra đã
 
 ## Giai đoạn đang làm
 
-- **Bàn giao buổi sau — 2026-11-17:** người học tạm dừng sau khi viết đủ endpoint FB-005, yêu cầu tracing availability khi tiếp tục. Bắt đầu getCourtAvailability tại dòng findUnique kiểm tra sân, mỗi lượt một dòng/điều kiện nhỏ rồi chờ; chưa làm UI hoặc API đặt/hủy. Mức hiểu không tăng từ test pass; chi tiết tại [stage-2](learning/stage-2.md#review-availability--2026-11-17).
+- **Ưu tiên hiện hành — dừng cuối buổi 2026-11-17:** người học yêu cầu buổi sau tracing lại từ đầu nội dung hôm nay. Bắt đầu mục đích tách Booking/BookingSlot với một đơn 90 phút/ba slot; từng đoạn nhỏ rồi chờ, mức Backend intern, không yêu cầu thuộc SQL. Sau đó mới quan hệ Prisma/FK/courtId, schema/CHECK, service availability và FE; thay ưu tiên demo FE trước. Chưa nâng mức hiểu từ xác nhận hoặc test pass; [hồ sơ học](learning/stage-2.md#review-availability--2026-11-17), bằng chứng kỹ thuật tại PROGRESS.
+
+- **Bàn giao buổi sau — 2026-11-17:** người học tạm dừng sau khi viết đủ endpoint FB-005, yêu cầu tracing availability khi tiếp tục. Theo yêu cầu bổ sung, bắt đầu bằng schema BookingStatus/Booking/BookingSlot và các quan hệ User/Court, sau đó migration 20261117050000_create_booking_slots (FK/CHECK/unique, đã áp dụng test/local); mỗi lượt một phần nhỏ rồi chờ. Sau phần database mới tracing getCourtAvailability từ findUnique; chưa làm UI hoặc API đặt/hủy. Mức hiểu không tăng từ test pass; chi tiết tại [stage-2](learning/stage-2.md#review-availability--2026-11-17).
 
 - **FB-005 — availability, 2026-11-17:** agent đã triển khai slot/ngày, migration Booking/BookingSlot và kiểm chứng HTTP/DB; chưa là bằng chứng người học hiểu schema/khóa/index. Vẫn cần demo trực quan request/DB trước–sau, releasedAt và EXPLAIN như yêu cầu phía dưới; bàn giao tại [stage-2](learning/stage-2.md#review-availability--2026-11-17).
 
