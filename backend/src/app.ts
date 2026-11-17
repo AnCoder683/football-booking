@@ -1,6 +1,7 @@
 import express, { type ErrorRequestHandler } from 'express';
 import { adminCourtsRouter, courtsRouter } from './modules/courts/courts.routes.js';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { branchesRouter } from './modules/branches/branches.routes.js';
 
 export const app = express();
 
@@ -12,6 +13,7 @@ app.get('/health', (_req, res) => {
 app.use('/courts', courtsRouter);
 app.use('/admin/courts', adminCourtsRouter);
 app.use('/auth', authRouter);
+app.use('/branches', branchesRouter);
 
 // Express 5 forwards rejected async handlers here. Keep DB/stack details
 // out of responses, including when PostgreSQL is unavailable.

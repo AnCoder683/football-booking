@@ -1,6 +1,31 @@
 import { prisma } from '../../lib/prisma.js';
 import { Prisma } from '../../generated/prisma/client.js';
-import type { CreateCourtBody, ListCourtsQuery, UpdateCourtBody } from './courts.schema.js';
+import type { CourtAvailabilityQuery, CreateCourtBody, ListAdminCourtsQuery, UpdateCourtBody } from './courts.schema.js';
+
+export async function getCourtAvailability(courtId: string, { date, durationMinutes }: CourtAvailabilityQuery) {
+  const court = await prisma.court.findUnique({ where: { id: courtId }, select: { isActive: true } });
+  if (court === null) return { status: 'COURT_NOT_FOUND' } as const;
+  if (!court.isActive) return { status: 'COURT_INACTIVE' } as const;
+
+  const opening = new Date(`${date}T06:00:00+07:00`).getTime();
+  const closing = new Date(`${date}T22:00:00+07:00`).getTime();
+  const halfHour = 30 * 60 * 1000;
+  const duration = durationMinutes * 60 * 1000;
+  const occupiedSlots = await prisma.bookingSlot.findMany({
+    where: { courtId, releasedAt: null, startAt: { gte: new Date(opening), lt: new Date(closing) } },
+    select: { startAt: true },
+  });
+  const now = Date.now();
+  const availableStarts: { startAt: string; endAt: string }[] = [];
+  for (let start = opening; start + duration <= closing; start += halfHour) {
+    if (start <= now) continue;
+    const end = start + duration;
+    const overlaps = occupiedSlots.some(slot => slot.startAt.getTime() < end && slot.startAt.getTime() + halfHour > start);
+    if (!overlaps) availableStarts.push({ startAt: new Date(start).toISOString(), endAt: new Date(end).toISOString() });
+  }
+
+  return { status: 'OK', data: { courtId, date, durationMinutes, availableStarts } } as const;
+}
 
 export async function updateCourt(courtId: string, body: UpdateCourtBody) {
   const existingCourt = await prisma.court.findUnique({ where: { id: courtId }, select: { id: true } });
@@ -86,9 +111,9 @@ export async function getCourt(courtId: string) {
   });
 }
 
-export async function listCourts({ page, limit, branchId, playersPerTeam }: ListCourtsQuery) {
+export async function listCourts({ page, limit, branchId, playersPerTeam, isActive }: ListAdminCourtsQuery) {
   const where = {
-    isActive: true,
+    ...(isActive === undefined ? {} : { isActive }),
     ...(branchId === undefined ? {} : { branchId }),
     ...(playersPerTeam === undefined ? {} : { playersPerTeam }),
   };

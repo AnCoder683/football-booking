@@ -1,6 +1,6 @@
 # API chi nhánh và sân
 
-[Chỉ mục thiết kế](../DESIGN.md) · Cập nhật 2026-11-04 · Chưa có code/migration/test.
+[Chỉ mục thiết kế](../DESIGN.md) · Hợp đồng đã duyệt; trạng thái triển khai 2026-11-17 xem từng API và PROGRESS.
 
 Các hợp đồng và validation bên dưới đã duyệt. Khách chỉ xem danh sách sân hoạt động; admin bỏ bộ lọc isActive thì xem tất cả. Không đổi mặc định API trong lần tổ chức tài liệu này.
 
@@ -13,7 +13,7 @@ Các hợp đồng và validation bên dưới đã duyệt. Khách chỉ xem da
 - Không có chi nhánh trả data=[], không phải 404. Sắp xếp name ASC, id ASC.
 - Bản đầu trả toàn bộ chi nhánh, chưa phân trang theo phạm vi một hệ thống nhỏ. Branch chưa có isActive theo thiết kế đã chốt; không tự thêm lọc chi nhánh đang hoạt động hoặc ẩn chi nhánh không có sân hoạt động.
 
-Người học xác nhận “OK duyệt.”. Đây là hợp đồng thiết kế, chưa triển khai/test.
+Người học xác nhận “OK duyệt.”. Đã triển khai ngày 2026-11-17: module branches, demo HTTP/PostgreSQL test và một test HTTP trả đúng trường, thứ tự tên và chi nhánh chưa có sân. Toàn backend 162/162 pass; chưa kiểm chứng DB hoàn toàn rỗng hoặc tie-break ID khi trùng tên, chưa UI; bằng chứng tại [PROGRESS](../PROGRESS.md).
 
 ## Loại sân — trường và cách lưu đã duyệt 2026-11-03
 
@@ -82,6 +82,10 @@ Người học xác nhận “Ok được duyệt.” cho response availableStar
 
 Người học hỏi có tính là trùng và yêu cầu đề xuất phương án; mentor cung cấp giải thích/đề xuất trên. Luồng chọn thời lượng/lọc giờ đã được duyệt ở trên; danh sách availableStarts cũng đã duyệt; endpoint công khai và khung response đã được duyệt bằng phản hồi “Oke.”. Thiết kế hợp đồng availability đã duyệt; chưa có code hoặc kết quả test, kiểu ID toàn hệ thống đã chốt UUID ngày 2026-11-04.
 
+### Trạng thái triển khai availability — 2026-11-17
+
+Đã triển khai hợp đồng trên, đọc BookingSlot theo courtId/ngày và releasedAt=null, sinh mốc bắt đầu nửa giờ và loại khoảng chồng lấn. Trả ISO UTC và Cache-Control: no-store; kết quả không giữ chỗ. Migration Booking/BookingSlot đã áp dụng test/local sau backup. Demo HTTP/DB và 17 test HTTP mới pass, toàn backend 179/179; demo hủy là cập nhật DB test, chưa API đặt/hủy. Chưa UI hoặc review hiểu code mới; các ghi chú chưa triển khai ở phần duyệt lịch sử phía trên được thay bằng trạng thái này. Bằng chứng/giới hạn tại [PROGRESS](../PROGRESS.md).
+
 ## API admin tạo sân — POST /admin/courts (hợp đồng đã duyệt 2026-11-03)
 
 Người học nêu tên/địa chỉ/giá và yêu cầu mentor bổ sung dựa trên Court để duyệt. Địa chỉ đã chốt ở Branch; tạo Court chọn branchId, không gửi địa chỉ riêng.
@@ -149,4 +153,6 @@ POST /admin/courts đã triển khai theo hợp đồng trên. Unique expression
 - Mặc định xem tất cả sân, gồm isActive=true và false. Query tùy chọn branchId, playersPerTeam (5/7/11), isActive (chuỗi chính xác true/false); các bộ lọc kết hợp AND. Bỏ isActive thì không lọc trạng thái, không tự hiểu false là bỏ bộ lọc.
 - Phân trang như GET /courts: page mặc định 1, limit mặc định 10/tối đa 50; số nguyên dương, name ASC rồi id ASC.
 - 200/success=true/message="Lấy danh sách sân thành công", data array theo bộ trường GET /courts, meta {page,limit,total,totalPages}; total đếm sau tất cả bộ lọc, totalPages=ceil(total/limit). Không khớp hoặc trang vượt phạm vi trả data=[]; branchId đúng định dạng nhưng không tồn tại cũng trả danh sách rỗng.
-- Query sai định dạng/giá trị trả 400/VALIDATION_ERROR với details. Người học xác nhận “Ok.” cho hợp đồng danh sách sân admin. Chưa triển khai/test.
+- Query sai định dạng/giá trị trả 400/VALIDATION_ERROR với details. Người học xác nhận “Ok.” cho hợp đồng danh sách sân admin.
+
+Triển khai 2026-11-17: dùng chung listCourts, controller công khai ép isActive=true còn admin truyền bộ lọc tùy chọn đã parse. Demo HTTP/PostgreSQL test và 9 ca HTTP mới pass; toàn backend 161/161 pass. Không đổi cách count/findMany riêng nên chưa bảo đảm hai truy vấn nhìn cùng snapshot nếu có ghi đồng thời. Chưa UI hoặc review hiểu code mới; bằng chứng tại [PROGRESS](../PROGRESS.md).

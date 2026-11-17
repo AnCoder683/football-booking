@@ -2,6 +2,8 @@
 
 [Chỉ mục thiết kế](../DESIGN.md) · Cập nhật 2026-11-04 · Chưa có schema/migration/test.
 
+**Cập nhật triển khai 2026-11-17:** migration `20261117050000_create_booking_slots` đã áp dụng test/local cho Booking/BookingSlot: enum, required/default, timestamptz(3), CHECK khung giờ/thời lượng/giá/tổng/hủy, FK RESTRICT gồm FK kép và unique/partial unique slot. Kiểm chứng trên DB thật tại [PROGRESS](../PROGRESS.md); quy tắc ghi đủ slot, đồng bộ hủy, quyền, cửa sổ đặt và khóa nghiệp vụ vẫn thuộc API FB-006, chưa được bảo đảm chỉ từ migration. Các ghi chú chưa có schema của hai bảng phía dưới là lịch sử duyệt.
+
 ## Đã duyệt: UUID và hành vi khóa ngoại
 
 ## Kiểu ID — đã duyệt UUID 2026-11-04

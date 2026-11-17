@@ -2,7 +2,7 @@
 
 Ứng dụng đặt sân bóng đá cho một cơ sở có nhiều sân. Mục tiêu là tự xây dựng, kiểm thử, triển khai và giải thích được một backend để đưa vào CV Backend intern.
 
-**Trạng thái:** FB-003 DONE; FB-004 DONE theo phạm vi Backend intern được người học chốt ngày 2026-11-16; FB-002 IN_REVIEW; FB-005 IN_PROGRESS. Đã có backend/frontend local, API sân, auth và phân quyền; FB-005 đã thêm API chi tiết sân và admin tạo/sửa sân. Lần chạy toàn backend gần nhất 152/152 test pass. Chưa CI hoặc deploy. Bằng chứng tại [PROGRESS](docs/PROGRESS.md).
+**Trạng thái:** FB-003 DONE; FB-004 DONE theo phạm vi Backend intern được người học chốt ngày 2026-11-16; FB-002 IN_REVIEW; FB-005 IN_PROGRESS. Đã có backend/frontend local, auth/phân quyền và 7 endpoint chi nhánh/sân/giờ trống; Booking/BookingSlot hỗ trợ availability đã migrate test/local, chưa API đặt/hủy. Lần chạy toàn backend gần nhất 179/179 test pass. Còn UI và nghiệm thu FB-005; chưa CI hoặc deploy. Bằng chứng tại [PROGRESS](docs/PROGRESS.md).
 
 **Giới hạn auth chưa kiểm chứng:** browser mất mạng/timeout/đóng tab giữa request, response hoặc Set-Cookie về muộn/đảo thứ tự và các tổ hợp lỗi nhiều tab. Hai demo F5/logout hai tab do người học xác nhận hành vi UI, chưa có Network. Browser thiếu Web Locks hiện bị dừng thao tác auth, chưa có fallback. Các mục này được hoãn khỏi điều kiện hoàn thành FB-004 của bản học tập; không khẳng định auth ổn định trong mọi tình huống. Middleware authorize sẽ được gắn vào API admin nghiệp vụ khi triển khai ticket tương ứng.
 
@@ -189,6 +189,12 @@ FE auth (cập nhật 2026-11-16): đã thêm tự refresh khi `/me` trả 401 v
 
 ### API danh sách sân và kết nối frontend
 
+`GET /courts/:courtId/availability?date=YYYY-MM-DD&durationMinutes=90` công khai trả các khoảng `{startAt,endAt}` UTC đủ 30/60/90/120 phút, mốc bắt đầu nửa giờ trong 06:00–22:00 Việt Nam, chỉ tương lai và ngày hôm nay..+7. Đọc BookingSlot có releasedAt=null để loại chồng lấn; slot lịch sử đã giải phóng không chặn giờ. UUID/query sai 400, sân thiếu 404, inactive 409; hết giờ phù hợp trả 200/availableStarts=[] và no-store. Kết quả không giữ chỗ, API đặt sau này vẫn phải kiểm tra lại. Đã demo HTTP/DB và 17 test tại `backend/tests/courts.availability.test.ts`; chưa UI giờ trống hoặc API đặt/hủy.
+
+`GET /branches` công khai trả toàn bộ chi nhánh với id/name/address, sắp name ASC rồi id ASC, gồm cả chi nhánh chưa có sân; không phân trang. HTTP 200/success=true/message="Lấy danh sách chi nhánh thành công"/data array. Đã demo HTTP/DB và một test tại `backend/tests/branches.test.ts`; chưa nối UI chọn chi nhánh.
+
+API danh sách admin `GET /admin/courts` chỉ ADMIN, mặc định gồm cả sân active/inactive. Query branchId/playersPerTeam/isActive kết hợp AND; isActive chỉ nhận chuỗi `true` hoặc `false`, bỏ qua thì không lọc trạng thái. Phân trang và bộ trường response như danh sách công khai; 401/403 trước validation, query sai 400, không khớp trả 200/data rỗng. Dùng chung service với GET /courts nhưng controller công khai luôn lọc active. Demo HTTP/DB và 9 test mới tại `backend/tests/courts.admin-list.test.ts` pass; chưa UI admin.
+
 API sửa sân `PATCH /admin/courts/:courtId` chỉ ADMIN: nhận ít nhất một trường name/playersPerTeam/pricePerSlot/isActive, giữ trường không gửi; từ chối null, field thừa và branchId. Trả 200 với dữ liệu đã lưu; ID/body sai 400, sân thiếu 404, tên trùng trong chi nhánh 409. Một UPDATE bảo đảm không đổi một phần khi lỗi. Đã demo HTTP/DB và 11 test tại `backend/tests/courts.update.test.ts`, gồm hai request tranh tên; chưa UI sửa sân hoặc kiểm chứng với booking.
 
 API tạo sân `POST /admin/courts` đã triển khai, chỉ ADMIN; xác thực/phân quyền trước validation body. Chuẩn hóa tên, loại sân 5/7/11, giá nguyên 1–536870911 VND/30 phút, mặc định active. Trả 201 với dữ liệu đã lưu; body sai/field thừa 400, chi nhánh thiếu 404, tên trùng trong chi nhánh 409 (database bảo vệ cả sân inactive và request đồng thời). Demo HTTP/DB và 8 test trong `backend/tests/courts.create.test.ts` pass; chưa UI tạo sân.
@@ -228,7 +234,7 @@ npx --no-install tsx src/scripts/check-db.ts
 
 Sau khi sinh Prisma Client, lệnh `tsx` chạy `SELECT 1 AS value` và đóng kết nối. Mong đợi `Database connection OK: SELECT 1 returned 1`, exit 0. Nó không mở HTTP server, tạo bảng hoặc sửa dữ liệu. Nếu lỗi, kiểm tra service db đang healthy, cổng và các biến `.env`; không gửi mật khẩu hoặc URL kết nối trong log. Lượt kiểm tra 2026-11-05 ban đầu thất bại khi DB đang dừng; khởi động lại DB healthy rồi chạy lại đã pass.
 
-`prisma/schema.prisma` hiện có User/Role, Branch và Court; hai migration đã áp dụng local. `npx --no-install prisma generate` sinh mã client vào `backend/src/generated/prisma/` (Git bỏ qua). Generate chỉ sinh code, không phải migration.
+`prisma/schema.prisma` hiện có User/Role, RefreshToken, Branch, Court, Booking/BookingStatus và BookingSlot; bốn migration đã áp dụng local và database test. Migration Booking/BookingSlot thêm CHECK thời gian/giá/hủy, FK kép và partial unique slot hiệu lực theo thiết kế. Schema không mô tả đầy đủ CHECK/partial unique nên phải giữ SQL migration. `npx --no-install prisma generate` sinh mã client vào `backend/src/generated/prisma/` (Git bỏ qua). Generate chỉ sinh code, không phải migration. Chưa có API ghi booking; việc tạo đủ slot và đồng bộ hủy trong transaction sẽ làm ở FB-006.
 
 ### Seed dữ liệu sân mẫu
 

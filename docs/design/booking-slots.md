@@ -1,6 +1,8 @@
 # BookingSlot và chống trùng
 
-[Chỉ mục thiết kế](../DESIGN.md) · Cập nhật 2026-11-04 · Chưa có code/migration/test.
+[Chỉ mục thiết kế](../DESIGN.md) · Thiết kế gốc 2026-11-04; trạng thái triển khai bên dưới.
+
+**Triển khai hỗ trợ availability — 2026-11-17:** Booking/BookingSlot và migration `20261117050000_create_booking_slots` đã có trên PostgreSQL test/local, gồm CHECK thời gian/giá/hủy, FK kép, UNIQUE booking/slot và partial unique court/start WHERE releasedAt IS NULL. GET availability đọc slot hiệu lực; chưa API đặt/hủy hoặc bảo đảm số lượng/đồng bộ slot bằng luồng ứng dụng. Demo HTTP và script assert DB của agent đã kiểm tra giải phóng/giữ lịch sử, dùng lại slot và hai transaction chồng slot khác giờ bắt đầu rollback bên thua. Chưa demo browser/EXPLAIN hoặc bằng chứng người học tự hiểu khóa/index; chi tiết tại [PROGRESS](../PROGRESS.md). Các câu “chưa triển khai” phía dưới là lịch sử thiết kế.
 
 Đã chọn mô hình từng slot 30 phút, releasedAt và partial unique index. Ví dụ/SQL là thiết kế, chưa chạy. Cần demo trực quan khi code; xem [nhu cầu học](../INTERVIEW_PREP.md).
 

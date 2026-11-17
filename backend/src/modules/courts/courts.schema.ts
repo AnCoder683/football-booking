@@ -30,6 +30,14 @@ export const listCourtsQuerySchema = z.object({
 
 export type ListCourtsQuery = z.infer<typeof listCourtsQuerySchema>;
 
+export const listAdminCourtsQuerySchema = listCourtsQuerySchema.extend({
+  isActive: z.enum(['true', 'false'], { error: 'isActive chỉ nhận true hoặc false.' })
+    .transform(value => value === 'true')
+    .optional(),
+});
+
+export type ListAdminCourtsQuery = z.infer<typeof listAdminCourtsQuerySchema>;
+
 export const courtParamsSchema = z.object({
   courtId: z.string({ error: 'courtId phải là UUID hợp lệ.' })
     .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
@@ -58,3 +66,23 @@ export const updateCourtBodySchema = z.strictObject({
 }).refine(body => Object.keys(body).length > 0, { message: 'Cần gửi ít nhất một trường để cập nhật.' });
 
 export type UpdateCourtBody = z.infer<typeof updateCourtBodySchema>;
+
+export const courtAvailabilityQuerySchema = z.object({
+  date: z.string({ error: 'date bắt buộc, định dạng YYYY-MM-DD.' })
+    .regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'date phải có định dạng YYYY-MM-DD.' })
+    .refine(value => {
+      const timestamp = Date.parse(`${value}T00:00:00Z`);
+      return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 10) === value;
+    }, { message: 'date phải là ngày lịch hợp lệ.' })
+    .refine(value => {
+      // Vietnam is UTC+07:00; do not use the server's local timezone for calendar dates.
+      const now = Date.now();
+      const today = new Date(now + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const lastDay = new Date(now + 7 * 60 * 60 * 1000 + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      return value >= today && value <= lastDay;
+    }, { message: 'date phải từ hôm nay đến hôm nay + 7 ngày theo giờ Việt Nam.' }),
+  durationMinutes: z.enum(['30', '60', '90', '120'], { error: 'durationMinutes chỉ nhận 30, 60, 90 hoặc 120.' })
+    .transform(Number),
+});
+
+export type CourtAvailabilityQuery = z.infer<typeof courtAvailabilityQuerySchema>;

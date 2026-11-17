@@ -13,16 +13,23 @@ enum Role {
   ADMIN
 }
 
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
 model User {
-  id               String         @id @default(uuid()) @db.Uuid
-  name             String         @db.Text
-  email            String         @unique @db.Text
-  passwordHash     String         @db.Text
-  role             Role           @default(CUSTOMER)
-  isBookingBlocked Boolean        @default(false)
-  createdAt        DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime       @updatedAt @db.Timestamptz(3)
-  refreshTokens    RefreshToken[]
+  id                String         @id @default(uuid()) @db.Uuid
+  name              String         @db.Text
+  email             String         @unique @db.Text
+  passwordHash      String         @db.Text
+  role              Role           @default(CUSTOMER)
+  isBookingBlocked  Boolean        @default(false)
+  createdAt         DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime       @updatedAt @db.Timestamptz(3)
+  refreshTokens     RefreshToken[]
+  bookings          Booking[]      @relation("BookingOwner")
+  cancelledBookings Booking[]      @relation("BookingCanceller")
 }
 
 model RefreshToken {
@@ -49,13 +56,48 @@ model Branch {
 model Court {
   // SQL migration adds CHECKs for team size/price and a unique expression
   // index on branchId + normalized name (including inactive courts).
-  id             String   @id @default(uuid()) @db.Uuid
-  branchId       String   @db.Uuid
-  name           String   @db.Text
+  id             String        @id @default(uuid()) @db.Uuid
+  branchId       String        @db.Uuid
+  name           String        @db.Text
   playersPerTeam Int
   pricePerSlot   Int
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
-  branch         Branch   @relation(fields: [branchId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @db.Timestamptz(3)
+  branch         Branch        @relation(fields: [branchId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  bookings       Booking[]
+  bookingSlots   BookingSlot[]
+}
+
+model Booking {
+  id            String        @id @default(uuid()) @db.Uuid
+  userId        String        @db.Uuid
+  courtId       String        @db.Uuid
+  startAt       DateTime      @db.Timestamptz(3)
+  endAt         DateTime      @db.Timestamptz(3)
+  status        BookingStatus @default(CONFIRMED)
+  pricePerSlot  Int
+  totalPrice    Int
+  createdAt     DateTime      @default(now()) @db.Timestamptz(3)
+  cancelledAt   DateTime?     @db.Timestamptz(3)
+  cancelledById String?       @db.Uuid
+  user          User          @relation("BookingOwner", fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  cancelledBy   User?         @relation("BookingCanceller", fields: [cancelledById], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  court         Court         @relation(fields: [courtId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  slots         BookingSlot[]
+
+  @@unique([id, courtId])
+}
+
+model BookingSlot {
+  // SQL migration protects active slots with a partial unique index and checks slot alignment.
+  id         String    @id @default(uuid()) @db.Uuid
+  bookingId  String    @db.Uuid
+  courtId    String    @db.Uuid
+  startAt    DateTime  @db.Timestamptz(3)
+  releasedAt DateTime? @db.Timestamptz(3)
+  booking    Booking   @relation(fields: [bookingId, courtId], references: [id, courtId], onDelete: Restrict, onUpdate: Restrict)
+  court      Court     @relation(fields: [courtId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([bookingId, startAt])
 }

@@ -4,6 +4,10 @@ Mức hiểu giữ nguyên theo câu trả lời thực tế; không suy ra đã
 
 ## Giai đoạn đang làm
 
+- **Bàn giao buổi sau — 2026-11-17:** người học tạm dừng sau khi viết đủ endpoint FB-005, yêu cầu tracing availability khi tiếp tục. Bắt đầu getCourtAvailability tại dòng findUnique kiểm tra sân, mỗi lượt một dòng/điều kiện nhỏ rồi chờ; chưa làm UI hoặc API đặt/hủy. Mức hiểu không tăng từ test pass; chi tiết tại [stage-2](learning/stage-2.md#review-availability--2026-11-17).
+
+- **FB-005 — availability, 2026-11-17:** agent đã triển khai slot/ngày, migration Booking/BookingSlot và kiểm chứng HTTP/DB; chưa là bằng chứng người học hiểu schema/khóa/index. Vẫn cần demo trực quan request/DB trước–sau, releasedAt và EXPLAIN như yêu cầu phía dưới; bàn giao tại [stage-2](learning/stage-2.md#review-availability--2026-11-17).
+
 - **FB-005 — review tạo sân, 2026-11-17:** đã có diễn giải độc lập về xác thực/quyền ADMIN, kiểm tra chi nhánh, tạo sân và lỗi chi nhánh bị xóa; còn bổ sung vị trí validation và phân biệt map 409 với throw lỗi khác. Bằng chứng tại [stage-2](learning/stage-2.md#review-api-admin-tạo-sân--2026-11-17); không suy ra đã hiểu index/concurrency.
 
 - FB-003 DONE ngày 2026-11-05: ứng dụng local/seed/test và ảnh desktop có bằng chứng, review phần chính đạt; [kết luận và giới hạn mức hiểu](learning/stage-1.md#kết-luận-review-fb-003--2026-11-05). G1-07 vẫn cần ôn riêng.

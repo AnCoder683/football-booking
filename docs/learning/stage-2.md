@@ -7,6 +7,12 @@ Các câu trả lời/nhật ký bên dưới giữ bằng chứng tại thời 
 
 Liên quan: FB-004–007.
 
+## Review availability — 2026-11-17
+
+- Người học báo đã review service danh sách sân và branches, chưa có diễn giải độc lập mới; không nâng mức hiểu câu hỏi từ “Ok/hiểu rồi”. Người học yêu cầu tiếp tục viết availability.
+- Agent đã code/migrate/demo HTTP và tự kiểm chứng DB; bằng chứng kỹ thuật duy nhất tại PROGRESS, không coi là người học đã tự demo hoặc hiểu CHECK/index/concurrency. API đặt/hủy chưa có.
+- Người học yêu cầu dừng phiên, buổi sau tracing phần availability vừa viết; chưa có câu trả lời độc lập về phần này. Bước tiếp theo: tracing getCourtAvailability từ dòng findUnique kiểm tra sân, mỗi lượt một dòng/điều kiện với giá trị cụ thể rồi chờ. Sau đó mới tới releasedAt=null; vẫn giữ yêu cầu demo trực quan slot/lịch sử và kế hoạch thực thi index trước–sau. Khi tracing khóa chỉ một đoạn nhỏ rồi chờ, không yêu cầu nắm script kiểm chứng nâng cao trước khi học phần độc lập.
+
 ## Review API admin tạo sân — 2026-11-17
 
 - Người học tự diễn giải: kiểm tra authenticate và quyền ADMIN, kiểm tra chi nhánh rồi tạo sân; trùng tên gây lỗi; chi nhánh bị xóa trong lúc tạo thì báo không tồn tại. Đúng phần thứ tự chính và lý do xử lý lỗi khóa ngoại; gọi nhầm Branch là “brand”.
