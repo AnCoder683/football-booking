@@ -4,6 +4,8 @@ Mức hiểu giữ nguyên theo câu trả lời thực tế; không suy ra đã
 
 ## Giai đoạn đang làm
 
+- **FB-005 — review tạo sân, 2026-11-17:** đã có diễn giải độc lập về xác thực/quyền ADMIN, kiểm tra chi nhánh, tạo sân và lỗi chi nhánh bị xóa; còn bổ sung vị trí validation và phân biệt map 409 với throw lỗi khác. Bằng chứng tại [stage-2](learning/stage-2.md#review-api-admin-tạo-sân--2026-11-17); không suy ra đã hiểu index/concurrency.
+
 - FB-003 DONE ngày 2026-11-05: ứng dụng local/seed/test và ảnh desktop có bằng chứng, review phần chính đạt; [kết luận và giới hạn mức hiểu](learning/stage-1.md#kết-luận-review-fb-003--2026-11-05). G1-07 vẫn cần ôn riêng.
 
 - FB-002: G1-04/G1-05 đã giải thích được; G1-06 còn cần ôn. Đây là trạng thái của câu hỏi, không phải xác nhận đã triển khai toàn bộ tính năng.

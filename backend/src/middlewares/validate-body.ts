@@ -10,10 +10,12 @@ export function validateBody<T>(schema: ZodType<T>) {
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Dữ liệu không hợp lệ.',
-          details: result.error.issues.map((issue) => ({
-            field: issue.path.join('.'),
-            message: issue.message,
-          })),
+          details: result.error.issues.flatMap((issue) => {
+            if (issue.code === 'unrecognized_keys') {
+              return issue.keys.map(field => ({ field, message: 'Trường không được phép.' }));
+            }
+            return [{ field: issue.path.join('.'), message: issue.message }];
+          }),
         },
       });
       return;

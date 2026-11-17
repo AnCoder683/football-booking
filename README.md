@@ -2,7 +2,7 @@
 
 Ứng dụng đặt sân bóng đá cho một cơ sở có nhiều sân. Mục tiêu là tự xây dựng, kiểm thử, triển khai và giải thích được một backend để đưa vào CV Backend intern.
 
-**Trạng thái:** FB-003 DONE; FB-004 DONE theo phạm vi Backend intern được người học chốt ngày 2026-11-16; FB-002 IN_REVIEW. Đã có backend/frontend local, API sân, auth và phân quyền; lần chạy toàn backend gần nhất 129/129 test pass. Chưa CI hoặc deploy. Bước tiếp theo là FB-005. Bằng chứng tại [PROGRESS](docs/PROGRESS.md).
+**Trạng thái:** FB-003 DONE; FB-004 DONE theo phạm vi Backend intern được người học chốt ngày 2026-11-16; FB-002 IN_REVIEW; FB-005 IN_PROGRESS. Đã có backend/frontend local, API sân, auth và phân quyền; FB-005 đã thêm API chi tiết sân và admin tạo/sửa sân. Lần chạy toàn backend gần nhất 152/152 test pass. Chưa CI hoặc deploy. Bằng chứng tại [PROGRESS](docs/PROGRESS.md).
 
 **Giới hạn auth chưa kiểm chứng:** browser mất mạng/timeout/đóng tab giữa request, response hoặc Set-Cookie về muộn/đảo thứ tự và các tổ hợp lỗi nhiều tab. Hai demo F5/logout hai tab do người học xác nhận hành vi UI, chưa có Network. Browser thiếu Web Locks hiện bị dừng thao tác auth, chưa có fallback. Các mục này được hoãn khỏi điều kiện hoàn thành FB-004 của bản học tập; không khẳng định auth ổn định trong mọi tình huống. Middleware authorize sẽ được gắn vào API admin nghiệp vụ khi triển khai ticket tương ứng.
 
@@ -188,6 +188,12 @@ FE auth (cập nhật 2026-11-15): đã gọi `/api/auth/me` bằng Bearer sau l
 FE auth (cập nhật 2026-11-16): đã thêm tự refresh khi `/me` trả 401 và khôi phục phiên sau F5. Khi tải trang, app gửi refresh bằng cookie HttpOnly, dùng access token mới gọi `/me`, rồi lưu session trong RAM. Có trạng thái đang khôi phục để chặn login/logout chồng request; refresh 401 về chưa đăng nhập, lỗi mạng chưa rõ kết quả yêu cầu thử đăng xuất lại. Các tab dùng Web Locks để gửi thao tác auth lần lượt. Build và self-check giả lập pass; chưa demo F5 hoặc nhiều tab bằng browser thật. Bằng chứng và giới hạn tại [PROGRESS](docs/PROGRESS.md).
 
 ### API danh sách sân và kết nối frontend
+
+API sửa sân `PATCH /admin/courts/:courtId` chỉ ADMIN: nhận ít nhất một trường name/playersPerTeam/pricePerSlot/isActive, giữ trường không gửi; từ chối null, field thừa và branchId. Trả 200 với dữ liệu đã lưu; ID/body sai 400, sân thiếu 404, tên trùng trong chi nhánh 409. Một UPDATE bảo đảm không đổi một phần khi lỗi. Đã demo HTTP/DB và 11 test tại `backend/tests/courts.update.test.ts`, gồm hai request tranh tên; chưa UI sửa sân hoặc kiểm chứng với booking.
+
+API tạo sân `POST /admin/courts` đã triển khai, chỉ ADMIN; xác thực/phân quyền trước validation body. Chuẩn hóa tên, loại sân 5/7/11, giá nguyên 1–536870911 VND/30 phút, mặc định active. Trả 201 với dữ liệu đã lưu; body sai/field thừa 400, chi nhánh thiếu 404, tên trùng trong chi nhánh 409 (database bảo vệ cả sân inactive và request đồng thời). Demo HTTP/DB và 8 test trong `backend/tests/courts.create.test.ts` pass; chưa UI tạo sân.
+
+API chi tiết `GET /courts/:courtId` công khai đã triển khai: trả thông tin sân và chi nhánh, kể cả sân vô hiệu hóa (`isActive=false`). UUID sai trả 400/VALIDATION_ERROR; sân không tồn tại trả 404/COURT_NOT_FOUND. Có demo HTTP và 4 test tại `backend/tests/courts.detail.test.ts`; chưa nối UI chi tiết hoặc giờ trống.
 
 Backend có `GET /courts` công khai theo [hợp đồng đã duyệt](docs/design/api-courts.md#api-danh-sách-sân--get-courts-đã-duyệt-2026-11-03). Chỉ trả sân hoạt động; lọc `branchId`/`playersPerTeam` kết hợp AND; mặc định page=1/limit=10, tối đa limit=50; sắp xếp name/id tăng dần. Query sai trả 400/VALIDATION_ERROR/details; không khớp hoặc trang vượt phạm vi trả 200/data rỗng. HTTP 500 dùng JSON INTERNAL_ERROR chung, không trả SQL/stack/secret.
 

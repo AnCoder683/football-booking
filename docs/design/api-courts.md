@@ -46,7 +46,7 @@ Người học xác nhận “Ok duyệt.” với toàn bộ hợp đồng danh
 - Sân vô hiệu hóa vẫn trả 200/isActive=false để khách mở đường dẫn cũ biết sân đã ngừng nhận đặt; không đồng nghĩa được tạo booking. POST tạo booking vẫn kiểm tra trạng thái hiện hành và từ chối 409/COURT_INACTIVE.
 - Chỉ trả thông tin sân, không gộp giờ trống theo ngày; API availability thiết kế riêng.
 
-Người học xác nhận “Ok duyệt.”. Chưa triển khai/test.
+Người học xác nhận “Ok duyệt.”. Đã triển khai ngày 2026-11-17: route → validateParams → controller → service → Prisma; demo HTTP trên PostgreSQL test cho active/inactive và 4 test HTTP pass (active, inactive, UUID sai, sân không tồn tại). Chờ người học review; bằng chứng tại [PROGRESS](../PROGRESS.md).
 
 ## API giờ trống — hợp đồng đã duyệt 2026-11-03
 
@@ -118,6 +118,10 @@ Người học xác nhận “Ok duyệt.” cho response 201, các mã lỗi 40
 
 Người học xác nhận “Ok.” cho tên 1–100 ký tự sau chuẩn hóa, từ chối field thừa bằng 400/VALIDATION_ERROR với details và lỗi trùng 409/COURT_NAME_CONFLICT. Hợp đồng tạo sân đã duyệt; chưa triển khai/test.
 
+### Trạng thái triển khai tạo sân — 2026-11-17
+
+POST /admin/courts đã triển khai theo hợp đồng trên. Unique expression index `Court_branchId_normalizedName_key` đã có từ migration `20261105073601_create_branch_court`; các ghi chú chưa có migration/triển khai trong phần duyệt lịch sử phía trên được thay bằng trạng thái này. Chỉ map vi phạm đúng index tên sang 409; lỗi DB khác đi qua error handler. Đã demo HTTP/DB và chạy 8 test HTTP mới, gồm request đồng thời và tên trùng sân inactive; toàn backend 141/141 pass. Chưa triển khai API sửa/danh sách sân admin hoặc UI; bằng chứng tại [PROGRESS](../PROGRESS.md).
+
 ## API admin sửa sân — hợp đồng đã duyệt 2026-11-03
 
 - Đã duyệt 2026-11-03: PATCH /admin/courts/:courtId, chỉ ADMIN; PATCH nhận những trường cần đổi, trường không gửi giữ nguyên.
@@ -134,6 +138,10 @@ Người học xác nhận “Ok.” cho tên 1–100 ký tự sau chuẩn hóa,
 - 409/COURT_NAME_CONFLICT nếu tên sau chuẩn hóa trùng với sân khác trong cùng chi nhánh, kể cả sân vô hiệu hóa. Giữ nguyên tên hiện có của chính sân không tính là trùng.
 - Thứ tự: xác thực → quyền ADMIN → validate ID/body → tìm Court → cập nhật và bảo vệ unique tên tại database → trả dữ liệu sau lưu. Cập nhật nhiều trường nguyên tử: bất kỳ lỗi nào không được để lại thay đổi một phần. Chi tiết SQL/khóa và test concurrent update vẫn còn thiết kế/kiểm chứng khi triển khai.
 - Người học xác nhận “Ok.” cho response, các lỗi và quy tắc cập nhật nhiều trường thành công toàn bộ hoặc không đổi gì. Chưa triển khai/test; không coi đã kiểm chứng SQL/khóa hoặc request đồng thời.
+
+### Trạng thái triển khai sửa sân — 2026-11-17
+
+Đã triển khai PATCH theo hợp đồng trên: một UPDATE chỉ ghi trường gửi lên, không đổi branchId, không mặc định isActive. Dùng unique index hiện có để bảo vệ tên, không thêm khóa thủ công hoặc migration. Demo HTTP/DB và 11 ca HTTP pass; lỗi trùng tên không để lại cập nhật một phần, hai request đổi hai sân sang cùng tên cho 200/409 và sân thua giữ nguyên. Đây là test request đồng thời, không điều khiển lịch khóa DB. Toàn backend 152/152 pass. Chưa có booking để kiểm chứng snapshot giá/lịch sử hoặc việc inactive không hủy booking; chờ người học review code. Ghi chú chưa triển khai trong phần duyệt phía trên được thay bằng trạng thái này; bằng chứng tại [PROGRESS](../PROGRESS.md).
 
 ## API admin danh sách sân — GET /admin/courts (đã duyệt 2026-11-03)
 

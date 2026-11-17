@@ -7,6 +7,12 @@ Các câu trả lời/nhật ký bên dưới giữ bằng chứng tại thời 
 
 Liên quan: FB-004–007.
 
+## Review API admin tạo sân — 2026-11-17
+
+- Người học tự diễn giải: kiểm tra authenticate và quyền ADMIN, kiểm tra chi nhánh rồi tạo sân; trùng tên gây lỗi; chi nhánh bị xóa trong lúc tạo thì báo không tồn tại. Đúng phần thứ tự chính và lý do xử lý lỗi khóa ngoại; gọi nhầm Branch là “brand”.
+- Mentor bổ sung: validateBody nằm sau phân quyền và trước truy vấn Branch; database ném lỗi unique, service bắt đúng ràng buộc tên rồi trả COURT_NAME_CONFLICT, controller trả HTTP 409. Lỗi không nhận diện được mới throw tiếp tới handler 500. Chưa có diễn giải độc lập về hai điểm bổ sung hoặc cơ chế index/concurrency; không nâng các câu hỏi G2-03/G3-04 lên đã hiểu đầy đủ.
+- Bước tiếp theo: người học xác nhận đã rõ khác biệt giữa lỗi trùng tên được map 409 và lỗi khác được throw tiếp; sau đó tiếp tục PATCH sân theo nhịp viết rồi review.
+
 ## Bàn giao tracing login — buổi sau
 
 - **Chốt phạm vi học FB-004 — 2026-11-16:** người học yêu cầu coi FB-004 hoàn thành và ghi giới hạn browser nâng cao chưa kiểm chứng; chuyển DONE theo phạm vi Backend intern. Không tăng mức hiểu các câu hỏi từ quyết định trạng thái này: G2-03 vẫn Cần ôn, G2-04 chưa học và để FB-006; không yêu cầu tracing FE nâng cao. Demo F5 giữ phiên và logout tab A làm tab B về chưa đăng nhập là báo cáo hành vi của người học, không phải diễn giải code. Bước tiếp theo: đọc phạm vi FB-005 và chọn một luồng BE nhỏ; bằng chứng/giới hạn kỹ thuật duy nhất ở PROGRESS.
