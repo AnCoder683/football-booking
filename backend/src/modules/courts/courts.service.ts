@@ -3,34 +3,47 @@ import { Prisma } from '../../generated/prisma/client.js';
 import type { CourtAvailabilityQuery, CreateCourtBody, ListAdminCourtsQuery, UpdateCourtBody } from './courts.schema.js';
 
 export async function getCourtAvailability(courtId: string, { date, durationMinutes }: CourtAvailabilityQuery) {
-  const court = await prisma.court.findUnique({ where: { id: courtId }, select: { isActive: true } });
+  const court = await prisma.court.findUnique({
+    where: { id: courtId },
+    select: { isActive: true },
+  });
   if (court === null) return { status: 'COURT_NOT_FOUND' } as const;
   if (!court.isActive) return { status: 'COURT_INACTIVE' } as const;
 
   const opening = new Date(`${date}T06:00:00+07:00`).getTime();
   const closing = new Date(`${date}T22:00:00+07:00`).getTime();
-  const halfHour = 30 * 60 * 1000;
-  const duration = durationMinutes * 60 * 1000;
+  const slotMilliseconds = 30 * 60 * 1000;
+  const durationMilliseconds = durationMinutes * 60 * 1000;
   const occupiedSlots = await prisma.bookingSlot.findMany({
-    where: { courtId, releasedAt: null, startAt: { gte: new Date(opening), lt: new Date(closing) } },
+    where: {
+      courtId,
+      releasedAt: null,
+      startAt: { gte: new Date(opening), lt: new Date(closing) },
+    },
     select: { startAt: true },
   });
   const now = Date.now();
   const availableStarts: { startAt: string; endAt: string }[] = [];
-  for (let start = opening; start + duration <= closing; start += halfHour) {
+  for (let start = opening; start + durationMilliseconds <= closing; start += slotMilliseconds) {
     if (start <= now) continue;
-    const end = start + duration;
-    const overlaps = occupiedSlots.some(slot => slot.startAt.getTime() < end && slot.startAt.getTime() + halfHour > start);
-    if (!overlaps) availableStarts.push({ startAt: new Date(start).toISOString(), endAt: new Date(end).toISOString() });
+    const end = start + durationMilliseconds;
+    const overlaps = occupiedSlots.some(slot => {
+      const occupiedStart = slot.startAt.getTime();
+      const occupiedEnd = occupiedStart + slotMilliseconds;
+      return occupiedStart < end && occupiedEnd > start;
+    });
+    if (overlaps) continue;
+
+    availableStarts.push({
+      startAt: new Date(start).toISOString(),
+      endAt: new Date(end).toISOString(),
+    });
   }
 
   return { status: 'OK', data: { courtId, date, durationMinutes, availableStarts } } as const;
 }
 
 export async function updateCourt(courtId: string, body: UpdateCourtBody) {
-  const existingCourt = await prisma.court.findUnique({ where: { id: courtId }, select: { id: true } });
-  if (existingCourt === null) return { status: 'COURT_NOT_FOUND' } as const;
-
   try {
     // One UPDATE keeps all fields atomic; omitted fields are not written.
     const court = await prisma.court.update({
@@ -54,7 +67,7 @@ export async function updateCourt(courtId: string, body: UpdateCourtBody) {
           adapterError?.cause?.constraint?.index === 'Court_branchId_normalizedName_key') {
         return { status: 'COURT_NAME_CONFLICT' } as const;
       }
-      // A court deleted after the existence check is still a 404.
+      // UPDATE báo P2025 nếu sân không tồn tại, không cần SELECT trước.
       if (error.code === 'P2025') return { status: 'COURT_NOT_FOUND' } as const;
     }
     throw error;
@@ -112,15 +125,11 @@ export async function getCourt(courtId: string) {
 }
 
 export async function listCourts({ page, limit, branchId, playersPerTeam, isActive }: ListAdminCourtsQuery) {
-  const where = {
-    ...(isActive === undefined ? {} : { isActive }),
-    ...(branchId === undefined ? {} : { branchId }),
-    ...(playersPerTeam === undefined ? {} : { playersPerTeam }),
-  };
+  // Prisma bỏ qua bộ lọc undefined; false vẫn lọc sân ngừng hoạt động.
+  const where = { isActive, branchId, playersPerTeam };
   const total = await prisma.court.count({ where });
   const skip = (page - 1) * limit;
   // Avoid an oversized DB offset for out-of-range pages.
-  // This is an ordinary list, not a held quote or a reserved slot.
   const data = skip >= total ? [] : await prisma.court.findMany({
     where,
     select: {

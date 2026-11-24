@@ -2,9 +2,10 @@ import type { Request, Response } from 'express';
 import type { LoginBody, RegisterBody } from './auth.schema.js';
 import { getMe, login, logout, refresh, register } from './auth.service.js';
 
-type MeLocals = { userId: string };
-
-export async function meController(_req: Request, res: Response<unknown, MeLocals>) {
+export async function meController(
+  _req: Request,
+  res: Response<unknown, { userId: string }>,
+) {
   res.set('Cache-Control', 'no-store');
   const user = await getMe(res.locals.userId);
 
@@ -27,9 +28,10 @@ export async function meController(_req: Request, res: Response<unknown, MeLocal
   });
 }
 
-type RegisterLocals = { body: RegisterBody };
-
-export async function registerController(_req: Request, res: Response<unknown, RegisterLocals>) {
+export async function registerController(
+  _req: Request,
+  res: Response<unknown, { body: RegisterBody }>,
+) {
   const user = await register(res.locals.body);
 
   if (user === null) {
@@ -50,9 +52,10 @@ export async function registerController(_req: Request, res: Response<unknown, R
   });
 }
 
-type LoginLocals = { body: LoginBody };
-
-export async function loginController(_req: Request, res: Response<unknown, LoginLocals>) {
+export async function loginController(
+  _req: Request,
+  res: Response<unknown, { body: LoginBody }>,
+) {
   res.set('Cache-Control', 'no-store');
   const result = await login(res.locals.body);
 

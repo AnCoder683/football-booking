@@ -66,21 +66,26 @@ backend/src/
 ├── app.ts
 ├── server.ts
 ├── config/
+│   ├── auth-config.ts
 │   └── database-config.ts
 ├── lib/
 │   └── prisma.ts
 ├── middlewares/
+│   ├── authenticate.ts
+│   ├── authorize.ts
+│   ├── csrf-protection.ts
+│   ├── validate-body.ts
+│   ├── validate-params.ts
 │   └── validate-query.ts
 ├── scripts/
 │   ├── check-db.ts
+│   ├── seed-admin.ts
 │   └── seed.ts
 ├── generated/prisma/          # Prisma sinh, Git bỏ qua
 └── modules/
-    └── courts/
-        ├── courts.routes.ts
-        ├── courts.schema.ts
-        ├── courts.controller.ts
-        └── courts.service.ts
+    ├── auth/                # routes, schema, controller, service
+    ├── branches/            # routes, controller, service
+    └── courts/              # routes, schema, controller, service
 ```
 
 - Routes khai báo URL/method và nối validation với controller.
@@ -90,7 +95,9 @@ backend/src/
 - Service xử lý quy tắc truy vấn (chỉ sân hoạt động, lọc/phân trang) và gọi Prisma trực tiếp; không phụ thuộc Express request/response.
 - `config` đọc cấu hình; `lib` khởi tạo Prisma dùng chung; `scripts` chứa các lệnh chạy riêng. `app.ts` gắn module/error handler; `server.ts` mở cổng.
 
-Ví dụ request: `GET /courts` → `validateQuery(listCourtsQuerySchema)` → controller `listCourts` → service `listCourts` → Prisma/PostgreSQL → controller trả JSON. Module auth sẽ theo cùng cách chia khi được triển khai; hiện chưa tạo module rỗng.
+Ví dụ request: `GET /courts` → `validateQuery(listCourtsQuerySchema)` → `listCourtsController` → service `listCourts` → Prisma/PostgreSQL → controller trả JSON. Auth và branches dùng cùng cách chia này.
+
+Để đọc code từ phần nhỏ nhất, bắt đầu với `GET /branches`, rồi `GET /courts`. Hai phần cần học riêng là refresh/logout (transaction và khóa User để các request không ghi đè nhau) và availability (một booking chiếm nhiều slot 30 phút). Giữ các bảo vệ này cùng CHECK/FK/unique trong database; không cần tự đọc code Prisma sinh trong `generated/`.
 
 ## Cách chạy và demo
 
