@@ -12,7 +12,7 @@
 - **Lần đầu tham gia:** đọc [hướng dẫn thực tập](docs/INTERNSHIP_GUIDE.md), xem [lộ trình](docs/ROADMAP.md) và [hồ sơ học tập](docs/INTERVIEW_PREP.md). Không bắt người đang làm ticket hiện tại quay lại giai đoạn 0.
 - Phạm vi nghiệp vụ hiện hành ở phần dưới và [REQUIREMENTS](docs/REQUIREMENTS.md); nhật ký cũ được giữ tại [archive](docs/archive/README.md).
 
-Có thể mở phiên bằng: “Đọc AGENTS.md và PROGRESS.md, tiếp tục từ điểm bàn giao; chỉ mở tài liệu liên quan đến bước hiện tại.”
+Có thể mở phiên bằng: “Đọc CLAUDE.md và PROGRESS.md, tiếp tục từ điểm bàn giao; chỉ mở tài liệu liên quan đến bước hiện tại.”
 
 ## Xuất phát điểm
 
@@ -299,7 +299,7 @@ Lệnh tạo ADMIN trong DB local theo cấu hình, lưu bcrypt hash với cost 
 
 Có luồng đặt/hủy hoạt động, test nghiệp vụ chính, tài liệu chạy local và bằng chứng phần việc đã làm. Chỉ ghi deploy/CI khi đã thực hiện thành công. Không tự điền số người dùng, tải chịu được hoặc tỷ lệ cải thiện.
 
-Quy tắc dành cho AI nằm trong [AGENTS.md](AGENTS.md).
+Quy tắc dành cho AI nằm trong [CLAUDE.md](CLAUDE.md) (`AGENTS.md` là symlink tới file này cho Codex).
 
 ### Quyết định tên sân — 2026-11-03
 
