@@ -20,14 +20,25 @@ export type LoginResponse = {
   error?: { message: string; details?: { field: string; message: string }[] };
 };
 
+export type RegisterResponse = {
+  success: boolean;
+  error?: { message: string; details?: { field: string; message: string }[] };
+};
+
+export function registerApi(body: { name: string; email: string; password: string }) {
+  return api.post<RegisterResponse>('/auth/register', body);
+}
+
 export function loginApi(credentials: { email: string; password: string }) {
   return api.post<LoginResponse>('/auth/login', credentials, {
     headers: { 'X-CSRF-Protection': '1' },
   });
 }
 
-export function getMeApi(accountApi: AxiosInstance) {
-  return accountApi.get<{ data: LoginData['user'] }>('/auth/me');
+export function getMeApi(accountApi: AxiosInstance, accessToken?: string) {
+  return accountApi.get<{ data: LoginData['user'] }>('/auth/me', {
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+  });
 }
 
 export function refreshApi() {

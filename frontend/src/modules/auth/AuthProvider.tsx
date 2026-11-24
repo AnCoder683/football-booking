@@ -211,9 +211,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             refreshCompleted = true;
 
             // Chưa có session nên gửi Bearer trực tiếp, chưa dùng interceptor.
-            const { data: userBody } = await api.get<{ data: LoginData['user'] }>('/auth/me', {
-              headers: { Authorization: `Bearer ${tokens.accessToken}` },
-            });
+            const { data: userBody } = await getMeApi(api, tokens.accessToken);
             if (!userBody?.data || typeof userBody.data.id !== 'string') {
               throw new Error('Unexpected account response');
             }

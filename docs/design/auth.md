@@ -29,6 +29,7 @@ Người học yêu cầu học trực quan phần khó khi code: demo từng t�
 
 ## Frontend session — đã duyệt 2026-11-16
 
+- **Tổ chức lại 2026-11-18:** `App` chỉ khai báo route; `AppLayout` giữ header/footer/thông báo phiên; form chuyển thành `pages/LoginPage.tsx` và `pages/RegisterPage.tsx`. Các tên LoginSection/RegisterSection trong bàn giao cũ là tên trước khi chuyển. `auth.api.ts` nay gồm cả register và tải /me lúc restore (Bearer truyền trực tiếp); tải /me sau login vẫn dùng instance có interceptor. Giữ nguyên Context, state trong RAM và giao thức đồng bộ auth.
 - Chọn React Context + useState, chưa thêm Redux/TanStack Query. AuthProvider giữ session trong RAM, logout và tải /me qua Axios request interceptor; useAuth để App/LoginSection đọc session và gọi thao tác auth. App giữ UI/routes, main bọc Provider.
 - Theo yêu cầu người học, auth.api.ts gom loginApi/getMeApi/logoutApi và kiểu response; getMeApi dùng instance có interceptor từ Provider. Module API trả nguyên Axios response/lỗi, Provider/form giữ validation và xử lý trạng thái/lỗi.
 - Ban đầu login(data) chỉ cập nhật session. Khi nối refresh cuối buổi, đổi thành login(credentials) bất đồng bộ trong Provider để gọi loginApi và cập nhật session trong cùng Web Lock; LoginSection chờ kết quả rồi điều hướng. Axios login/logout tách khỏi instance gắn Bearer. Access token không lưu localStorage; refresh cookie vẫn HttpOnly do browser quản lý.

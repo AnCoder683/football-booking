@@ -172,17 +172,36 @@ npm run preview
 
 `check` kiểm tra TypeScript; `build` kiểm tra kiểu rồi tạo `frontend/dist/`. `preview` phục vụ bản build tại <http://127.0.0.1:4173/>, cần build trước; đây là server xem thử trên local. Không dùng dev/preview làm cấu hình deploy.
 
+Frontend tổ chức theo nghiệp vụ (feature-based), giữ ba phần rõ ràng: trang ghép giao diện, module giữ chức năng, file API gửi HTTP. Không thêm Redux, repository hoặc lớp service cho FE.
+
+```text
+frontend/src/
+├── App.tsx                  # Khai báo route
+├── main.tsx                 # Gắn router và AuthProvider
+├── layouts/AppLayout.tsx    # Header, footer, thông báo phiên và Outlet
+├── pages/                   # HomePage, LoginPage, RegisterPage
+├── modules/
+│   ├── auth/                # AuthProvider, useAuth, auth.api, auth-coordination
+│   ├── branches/            # branches.api và kiểu Branch
+│   └── courts/              # CourtsSection, CourtAvailability, courts.api
+├── lib/api.ts               # Axios chung, baseURL /api
+└── styles.css
+```
+
 Các file chính:
 
 - `frontend/index.html`: trang HTML gốc và phần tử `root`.
 - `frontend/src/main.tsx`: gắn React vào `root`.
-- `frontend/src/App.tsx`: header/footer chung và route React Router: `/` là trang chủ, `/register` là trang đăng ký, `/login` là trang đăng nhập; URL không khớp hiện thông báo không tìm thấy.
+- `frontend/src/App.tsx`: route React Router: `/`, `/register`, `/login` và trang không tìm thấy. `layouts/AppLayout.tsx` giữ khung chung; trang con hiển thị qua Outlet.
 - `frontend/src/pages/HomePage.tsx`: phần giới thiệu và danh sách sân trên trang chủ.
-- `frontend/src/modules/courts/CourtsSection.tsx`: gọi Axios lấy danh sách sân, trạng thái tải/lỗi/rỗng, thẻ sân và phân trang.
-- `frontend/src/modules/auth/RegisterSection.tsx`: form họ tên/email/mật khẩu, gửi đăng ký qua `/api/auth/register`, trạng thái đang gửi/thành công/lỗi; không tự đăng nhập.
-- `frontend/src/modules/auth/LoginSection.tsx`: form email/mật khẩu, gọi `/api/auth/login` với header CSRF; thành công lưu access token/user trong state App và về trang chủ, không lưu token vào localStorage/sessionStorage.
+- `frontend/src/modules/courts/CourtsSection.tsx`: giữ bộ lọc/phân trang/lựa chọn sân và trạng thái tải; gọi `branches.api.ts` và `courts.api.ts`. `CourtAvailability.tsx` giữ ngày/thời lượng/giờ được chọn, dùng cùng kiểu Court từ `courts.api.ts`.
+- `frontend/src/pages/RegisterPage.tsx`: form đăng ký, gọi `registerApi`; giữ validation và thông báo tại trang, không tự đăng nhập.
+- `frontend/src/pages/LoginPage.tsx`: form đăng nhập và kiểm tra trạng thái phiên trước khi hiện form; gọi `useAuth().login`, thành công về trang chủ. AuthProvider giữ access token/user trong RAM và quản lý khôi phục/refresh/logout.
+- `frontend/src/modules/*/*.api.ts`: khai báo endpoint và kiểu request/response; trả nguyên Axios response/lỗi. Component/Provider quyết định trạng thái và thông báo; tín hiệu hủy request vẫn truyền xuống Axios. `auth-coordination.ts` chỉ điều phối auth giữa các tab, không lưu access token.
 - `frontend/src/styles.css`: màu sắc, bố cục và CSS cho màn hình nhỏ.
 - `frontend/vite.config.ts`: plugin React và cổng local.
+
+Ví dụ luồng đọc: `HomePage` → `CourtsSection` → `getCourtsApi` → `lib/api` → backend. State dùng riêng nằm tại component; chỉ phiên đăng nhập dùng Context vì nhiều trang cùng cần.
 
 Đã chạy 2026-11-05: npm install báo 0 vulnerabilities; `npm run build` (gồm check) exit 0. Dev server sẵn sàng; HTTP trang gốc, main.tsx, App.tsx và CSS đều 200. Công cụ trình duyệt báo browser access host unavailable nên chưa xác nhận render, tương tác hoặc bố cục mobile trực quan. Chưa chạy preview.
 

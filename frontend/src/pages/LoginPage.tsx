@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import axios from 'axios';
-import { useAuth } from './useAuth';
-import type { LoginResponse } from './auth.api';
+import { useAuth } from '../modules/auth/useAuth';
+import type { LoginResponse } from '../modules/auth/auth.api';
 
-export default function LoginSection() {
-  const { login } = useAuth();
+export default function LoginPage() {
+  const { login, session, isRestoring, isLoggingOut, logoutUnconfirmed } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -43,6 +43,11 @@ export default function LoginSection() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (isRestoring) return <p role="status">Đang khôi phục phiên…</p>;
+  if (session || isLoggingOut || logoutUnconfirmed) {
+    return <p>Vui lòng hoàn tất đăng xuất trước khi đăng nhập lại.</p>;
   }
 
   return (

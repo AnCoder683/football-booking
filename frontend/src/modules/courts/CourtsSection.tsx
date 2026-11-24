@@ -1,20 +1,8 @@
 import { useEffect, useState } from 'react';
-import { api } from '../../lib/api';
+import { getBranchesApi, type Branch } from '../branches/branches.api';
+import { getCourtsApi, type CourtsResponse } from './courts.api';
 import CourtAvailability from './CourtAvailability';
 
-type Court = {
-  id: string;
-  name: string;
-  playersPerTeam: number;
-  pricePerSlot: number;
-  isActive: boolean;
-  branch: { id: string; name: string; address: string };
-};
-type CourtsResponse = {
-  success: true;
-  data: Court[];
-  meta: { page: number; limit: number; total: number; totalPages: number };
-};
 type LoadState =
   | { status: 'loading' }
   | { status: 'error' }
@@ -24,7 +12,7 @@ const money = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND
 
 export default function CourtsSection() {
   const [branchId, setBranchId] = useState('');
-  const [branches, setBranches] = useState<Court['branch'][]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [branchesStatus, setBranchesStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [branchAttempt, setBranchAttempt] = useState(0);
   const [courtId, setCourtId] = useState('');
@@ -37,7 +25,7 @@ export default function CourtsSection() {
     setBranchesStatus('loading');
     async function loadBranches() {
       try {
-        const { data } = await api.get<{ data: Court['branch'][] }>('/branches', { signal: controller.signal });
+        const { data } = await getBranchesApi(controller.signal);
         if (!controller.signal.aborted) {
           setBranches(data.data);
           setBranchesStatus('success');
@@ -56,10 +44,7 @@ export default function CourtsSection() {
 
     async function loadCourts() {
       try {
-        const { data: response } = await api.get<CourtsResponse>('/courts', {
-          params: { page, limit: 10, branchId: branchId || undefined },
-          signal: controller.signal,
-        });
+        const { data: response } = await getCourtsApi(page, branchId, controller.signal);
         if (response?.success !== true || !Array.isArray(response.data) || !response.meta) {
           throw new Error('Unexpected response');
         }

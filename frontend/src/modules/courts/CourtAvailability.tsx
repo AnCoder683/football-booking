@@ -1,16 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { isAxiosError } from 'axios';
-import { api } from '../../lib/api';
+import { getCourtApi, getCourtAvailabilityApi, type Court, type AvailableStart } from './courts.api';
 
-type Court = {
-  id: string;
-  name: string;
-  playersPerTeam: number;
-  pricePerSlot: number;
-  isActive: boolean;
-  branch: { name: string; address: string };
-};
-type AvailableStart = { startAt: string; endAt: string };
 type AvailabilityState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
@@ -40,7 +31,7 @@ export default function CourtAvailability({ courtId }: { courtId: string }) {
     setCourt(null);
     async function loadAvailability() {
       try {
-        const { data: detail } = await api.get<{ data: Court }>(`/courts/${courtId}`, { signal: controller.signal });
+        const { data: detail } = await getCourtApi(courtId, controller.signal);
         if (controller.signal.aborted) return;
         setCourt(detail.data);
         if (!detail.data.isActive) {
@@ -51,13 +42,9 @@ export default function CourtAvailability({ courtId }: { courtId: string }) {
           setState({ status: 'error', message: 'Vui lòng chọn ngày từ hôm nay đến 7 ngày tới.' });
           return;
         }
-        const availabilityRequest = api.get<{ data: { availableStarts: AvailableStart[] } }>(`/courts/${courtId}/availability`, {
-          params: { date, durationMinutes }, signal: controller.signal,
-        });
+        const availabilityRequest = getCourtAvailabilityApi(courtId, date, durationMinutes, controller.signal);
         const baseRequest = durationMinutes === 30 ? availabilityRequest
-          : api.get<{ data: { availableStarts: AvailableStart[] } }>(`/courts/${courtId}/availability`, {
-              params: { date, durationMinutes: 30 }, signal: controller.signal,
-            });
+          : getCourtAvailabilityApi(courtId, date, 30, controller.signal);
         const [availability, base] = await Promise.all([availabilityRequest, baseRequest]);
         if (!controller.signal.aborted) setState({ status: 'success', starts: availability.data.data.availableStarts, baseStarts: base.data.data.availableStarts });
       } catch (error) {
